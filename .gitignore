@@ -1,0 +1,5 @@
+target
+articulated.iml
+.idea
+*.db
+run.sh
