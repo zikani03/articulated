@@ -92,6 +92,7 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>UTF-8</encoding>
+                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
                 <dependencies>
                     <dependency>
