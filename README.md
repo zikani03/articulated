@@ -25,14 +25,8 @@ What interesting things can we do with articles extracted from nyasatimes? Well 
 - Play with String compression algorithms
 - Extract quotes from articles **"..." He said**, **"..." said Ndani ndani**
 - Find out how much money has been mentioned on NyasaTimes since 2016 categorized by keywords (donates, funds, wins, receives, aid etc..)
-- Create webscraper components in Go
-- Use virtualthreads for webscrapers
-- Implement gRPC service for collecting scraped data
-- Figure out how to deal with large arrays in gRPC
+- ~Use virtualthreads for running the webscrapers~
 - Integrate Cloudy for semantic word clouds
-- Load test gRPC service
-- Implement API with Armeria 
-- 
 
 ## Building
 
