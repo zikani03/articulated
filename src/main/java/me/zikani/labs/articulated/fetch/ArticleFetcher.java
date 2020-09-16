@@ -11,8 +11,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -23,6 +21,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static me.zikani.labs.articulated.Utils.sha1;
 
 public class ArticleFetcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(ArticleFetcher.class);
@@ -103,23 +103,6 @@ public class ArticleFetcher {
                 return a;
             })
             .collect(Collectors.toList());
-    }
-
-    /**
-     * Digest instance for computing hash of a text
-     */
-    static MessageDigest messageDigest;
-    private static String sha1(String text) {
-        if (messageDigest == null) {
-            try {
-                messageDigest = MessageDigest.getInstance("SHA-1");
-            } catch (NoSuchAlgorithmException e) {
-                // This shouldn't happen
-                LOGGER.error("Failed to initialize MessageDigest instance for SHA-1", e);
-                return text;
-            }
-        }
-        return Hex.encode(messageDigest.digest(text.getBytes()));
     }
 
     public void clearFetchedArticles() {

@@ -1,6 +1,8 @@
-package me.zikani.labs.articulated.fetch;
+package me.zikani.labs.articulated;
 
-final class Hex {
+public final class Hex {
+    private Hex() {}
+
     private static final char[] HEX = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
