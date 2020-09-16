@@ -3,7 +3,6 @@ package me.zikani.labs.articulated.fetch;
 import me.zikani.labs.articulated.model.Article;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +15,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
@@ -32,6 +27,7 @@ import java.util.stream.Stream;
 public class ArticleFetcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(ArticleFetcher.class);
     HttpClient client;
+    final NyasatimesArticleParser articleParser = new NyasatimesArticleParser();
     final ConcurrentSkipListSet<Article> fetchedArticles;
 
     public ArticleFetcher() {
@@ -74,7 +70,7 @@ public class ArticleFetcher {
                         .uri(URI.create(article.getUrl()))
                         .build();
                     return client.sendAsync(request, stringBodyHandler)
-                        .thenApply(response -> parseArticle(response.body(), article))
+                        .thenApply(response -> articleParser.parseArticle(response.body(), article))
                         .whenComplete((fetchedArticle, exception) -> {
                             if (exception != null) {
                                 LOGGER.error("Failed to read article.", exception);
@@ -107,51 +103,6 @@ public class ArticleFetcher {
                 return a;
             })
             .collect(Collectors.toList());
-    }
-
-    private Article parseArticle(String body, final Article article) {
-        try {
-            Element document = Jsoup.parse(body).getElementById("content");
-            /**
-             * We are dealing with a structure like this for the HTML of the Article
-             *
-             * <h1 class="entry-title">Water, food security project formed to benefit 270mln people in Malawi, Kenya, Ghana</h1>
-             *
-             * <div class="entry-meta">
-             *   <span class="glyphicon glyphicon-calendar"></span> August 15, 2018
-             *   <span class="glyphicon glyphicon-user"> </span> Duncan Mlanjira - Nyasa Times
-             *   <a href="https://www.nyasatimes.com/water-food-security-project-formed-to-benefit-270mln-people-in-malawi-kenya-ghana/#respond"> <span class="glyphicon glyphicon-comment"> </span> Be the first to comment
-             * </div>
-             *
-             * <div class="entry-content">
-             *    <div rel="auto">Some text here</div>
-             * </div>
-             */
-            article.setTitle(
-                // h1.entry-title
-                document.selectFirst("h1.nyasa-title").text()
-            );
-            StringJoiner sj = new StringJoiner("\n");
-            document.select("div.nyasa-content")
-                .eachText()
-                .forEach(text -> sj.add(text));
-
-            article.setBody(sj.toString());
-
-            Element meta= document.selectFirst("div.entry-meta");
-
-            var formatter = DateTimeFormatter.ofPattern("MMMM d, yyyy");
-            var date = meta.textNodes().get(1).text();
-            article.setPublishedOn(LocalDate.parse(date.trim(), formatter));
-
-            var author = meta.textNodes().get(2).text();
-            article.setAuthor(author.strip());
-        } catch (DateTimeParseException ex) {
-            LOGGER.error("Failed to parse article date", ex);
-        } catch (Exception ex) {
-            LOGGER.error("Failed to parse article body", ex);
-        }
-        return article;
     }
 
     /**
