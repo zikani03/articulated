@@ -54,7 +54,7 @@ public class ArticleFetcher {
         if (page == 1) {
             url = String.format("https://www.nyasatimes.com/category/%s/", category);
         }
-        LOGGER.info("Fetching articles from " + url);
+        LOGGER.info("Fetching articles from url={}", url);
         var req = HttpRequest.newBuilder()
                 .GET()
                 .uri(URI.create(url))
@@ -77,10 +77,7 @@ public class ArticleFetcher {
                         .thenApply(response -> parseArticle(response.body(), article))
                         .whenComplete((fetchedArticle, exception) -> {
                             if (exception != null) {
-                                LOGGER.error(
-                                    "Failed to read article. Got exception: " + exception.getMessage(),
-                                    exception
-                                );
+                                LOGGER.error("Failed to read article.", exception);
                             }
                             fetchedArticles.add(fetchedArticle);
                         })
