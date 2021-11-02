@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
 import static java.util.Collections.singletonMap;
+import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
 
 public class Application {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -38,7 +39,8 @@ public class Application {
         wordFrequencyDAO.createTable();
 
         Spark.get("/articles", (request, response) -> {
-            return objectMapper.writeValueAsString(singletonMap("artiles", "No articles here"));
+            response.type(APPLICATION_JSON.asString());
+            return objectMapper.writeValueAsString(singletonMap("articles", articleDAO.fetchAll()));
         });
 
         Spark.post("/articles/download/:category", (request, response) -> {
@@ -74,11 +76,11 @@ public class Application {
                 LOGGER.info("Saving {} articles to database", articleSet.size());
                 articleSet.forEach(articleDAO::save);
 
-                // Count words from the articles we have
-                wfc.countForAll(articleSet).forEach((word, frequency) -> {
-                    LOGGER.info("Found word {}={}", word, frequency);
-                    wordFrequencyDAO.insert(word, frequency);
-                });
+//                // Count words from the articles we have
+//                wfc.countForAll(articleSet).forEach((word, frequency) -> {
+//                    LOGGER.info("Found word {}={}", word, frequency);
+//                    wordFrequencyDAO.insert(word, frequency);
+//                });
 
                 articleFetcher.clearFetchedArticles();
 

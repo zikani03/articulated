@@ -7,14 +7,21 @@ import org.jdbi.v3.sqlobject.customizer.BindBean;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
+import java.util.List;
+
 @RegisterBeanMapper(Article.class)
 public interface ArticleDAO {
 
     @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles WHERE id = :id")
     Article get(@Bind String id);
 
-    @SqlUpdate("INSERT OR REPLACE INTO articles(id,  url,  title,  author,  publishedOn,  body,  readingTime,  created) " +
-              "              VALUES(:id, :url, :title, :author, :publishedOn, :body, :readingTime, :created)")
+    @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles")
+    List<Article> fetchAll();
+
+    @SqlUpdate("""
+    INSERT OR REPLACE INTO articles(id,  url,  title,  author,  publishedOn,  body,  readingTime,  created)
+     VALUES(:id, :url, :title, :author, :publishedOn, :body, :readingTime, :created)
+    """)
     void save(@BindBean Article article);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS articles (" +

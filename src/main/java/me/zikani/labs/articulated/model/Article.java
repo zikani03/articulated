@@ -72,8 +72,8 @@ public class Article implements Comparable<Article> {
         this.readingTime = readingTime;
     }
 
-    public LocalDateTime getCreated() {
-        return created.toLocalDateTime();
+    public Timestamp getCreated() {
+        return created;
     }
 
     public void setCreated(Timestamp created) {
