@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +40,7 @@ public class ArticleFetcher {
     public CompletableFuture<Stream<Article>> fetchFrom(String category, int page) throws InterruptedException, ExecutionException {
         if (client == null) {
             client = HttpClient.newBuilder()
-                    .executor(Executors.newVirtualThreadExecutor())
+                    // TODO: use when loom lands : .executor(Executors.newVirtualThreadExecutor())
                     .connectTimeout(Duration.ofSeconds(30))
                     .build();
         }
