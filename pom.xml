@@ -19,7 +19,7 @@
     <properties>
         <failsafe.version>1.0.4</failsafe.version>
         <jackson.version>2.11.2</jackson.version>
-        <jdbi.version>3.14.4</jdbi.version>
+        <jdbi.version>3.23.0</jdbi.version>
         <jetty.version>9.4.31.v20200723</jetty.version>
         <jsoup.version>1.14.3</jsoup.version>
         <junit5.version>5.6.2</junit5.version>
