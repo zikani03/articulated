@@ -4,7 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+
+import static me.zikani.labs.articulated.model.Amount.KWACHA_REGEX_2;
 
 public class Article implements Comparable<Article> {
     @JsonProperty private String id;
@@ -106,5 +110,18 @@ public class Article implements Comparable<Article> {
             return this.getTitle().compareTo(o.getTitle());
         }
         return this.publishedOn.compareTo(o.publishedOn);
+    }
+
+    @JsonProperty
+    public List<Amount> getMentionedAmounts() {
+        List<Amount> amounts = new ArrayList<>();
+
+        Matcher m = KWACHA_REGEX_2.matcher(this.body.toLowerCase());
+
+        while(m.find()) {
+            amounts.add(new Amount("MWK", Double.parseDouble(m.group("amount")), m.group("denomination")));
+        }
+
+        return amounts;
     }
 }

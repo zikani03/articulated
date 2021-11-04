@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.dao.WordFrequencyDAO;
 import me.zikani.labs.articulated.fetch.ArticleFetcher;
+import me.zikani.labs.articulated.model.Amount;
 import me.zikani.labs.articulated.model.Article;
 import me.zikani.labs.articulated.processor.ReadTimeEstimator;
 import me.zikani.labs.articulated.processor.WordFrequencyCounter;
@@ -14,6 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Spark;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
@@ -41,6 +45,18 @@ public class Application {
         Spark.get("/articles", (request, response) -> {
             response.type(APPLICATION_JSON.asString());
             return objectMapper.writeValueAsString(singletonMap("articles", articleDAO.fetchAll()));
+        });
+
+        Spark.get("/articles/amounts", (request, response) -> {
+            response.type(APPLICATION_JSON.asString());
+            List<Article> articleList =  articleDAO.fetchAll();
+            Map<String, List<Amount>> amounts = new HashMap<>();
+
+            articleList.forEach(article -> {
+                amounts.put(article.getUrl(), article.getMentionedAmounts());
+            });
+
+            return objectMapper.writeValueAsString(singletonMap("articles", amounts));
         });
 
         Spark.post("/articles/download/:category", (request, response) -> {
