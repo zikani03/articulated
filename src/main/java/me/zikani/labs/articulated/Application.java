@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.dao.WordFrequencyDAO;
 import me.zikani.labs.articulated.fetch.ArticleFetcher;
+import me.zikani.labs.articulated.fetch.ArticleParser;
+import me.zikani.labs.articulated.fetch.Malawi24ArticleParser;
+import me.zikani.labs.articulated.fetch.NyasatimesArticleParser;
 import me.zikani.labs.articulated.model.Amount;
 import me.zikani.labs.articulated.model.Article;
 import me.zikani.labs.articulated.processor.ReadTimeEstimator;
@@ -59,12 +62,20 @@ public class Application {
             return objectMapper.writeValueAsString(singletonMap("articles", amounts));
         });
 
-        Spark.post("/articles/download/:category", (request, response) -> {
-            // For all the articles fetched
-            String categoryName = request.params("category"); // business
+        Spark.post("/articles/download/:site/:category", (request, response) -> {
+            String siteName = request.params("site").toLowerCase();
+            String categoryName = request.params("category");
+            int fromPage = request.queryMap("from").hasValue() ? request.queryMap("from").integerValue() : 1;
+            int toPage = request.queryMap("to").hasValue() ? request.queryMap("to").integerValue() : 1;
             // final WordFrequencyCount wfc = new WordFrequencyCount();
             // final NamedEntityExtractor nme = new NamedEntityExtractor();
-            ArticleFetcher articleFetcher = new ArticleFetcher();
+            ArticleParser articleParser = switch (siteName) {
+                case "nyasatimes" -> new NyasatimesArticleParser();
+                case "malawi24" -> new Malawi24ArticleParser();
+                default -> new NyasatimesArticleParser();
+            };
+            ArticleFetcher articleFetcher = new ArticleFetcher(articleParser);
+
             var pages = IntStream.rangeClosed(1, 5);
             final WordFrequencyCounter wfc = new WordFrequencyCounter();
 

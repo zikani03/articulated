@@ -2,14 +2,21 @@ package me.zikani.labs.articulated.fetch;
 
 import me.zikani.labs.articulated.model.Article;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
+
+import static me.zikani.labs.articulated.Utils.sha1;
 
 /**
  * Parses articles from <a href="https://nyasatimes.com">Nyasa Times</a>
@@ -19,7 +26,7 @@ import java.util.StringJoiner;
  *
  * @version 2020-09-16
  */
-public class NyasatimesArticleParser {
+public class NyasatimesArticleParser implements ArticleParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(NyasatimesArticleParser.class);
 
     /**
@@ -30,6 +37,7 @@ public class NyasatimesArticleParser {
      * @param article
      * @return
      */
+    @Override
     public Article parseArticle(String body, final Article article) {
         try {
             Element document = Jsoup.parse(body).getElementById("content");
@@ -73,5 +81,37 @@ public class NyasatimesArticleParser {
             LOGGER.error("Failed to parse article body", ex);
         }
         return article;
+    }
+
+    /**
+     * Given the HTML from a page like https://nyasatimes.com/category/business/page/2/
+     * extracts all the links to the articles from that page into a list
+     * of string uris/urls
+     *
+     * @param categoryPageBody
+     * @return
+     */
+    @Override
+    public List<Article> followArticleLinks(String categoryPageBody) {
+        Document document = Jsoup.parse(categoryPageBody);
+        return document.select(".card-main-title > a")
+                .stream()
+                .map(anchor -> {
+                    var a = new Article();
+                    a.setUrl(anchor.attr("href"));
+                    a.setId(sha1(a.getUrl()));
+                    a.setCreated(Timestamp.valueOf(LocalDateTime.now()));
+                    return a;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getCategoryPageUrl(String category, int page) {
+        var url = String.format("https://www.nyasatimes.com/category/%s/page/%s/", category, page);
+        if (page == 1) {
+            url = String.format("https://www.nyasatimes.com/category/%s/", category);
+        }
+        return url;
     }
 }
