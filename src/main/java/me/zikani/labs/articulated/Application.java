@@ -66,7 +66,7 @@ public class Application {
             String siteName = request.params("site").toLowerCase();
             String categoryName = request.params("category");
             int fromPage = request.queryMap("from").hasValue() ? request.queryMap("from").integerValue() : 1;
-            int toPage = request.queryMap("to").hasValue() ? request.queryMap("to").integerValue() : 1;
+            int toPage = request.queryMap("to").hasValue() ? request.queryMap("to").integerValue() : 2;
             // final WordFrequencyCount wfc = new WordFrequencyCount();
             // final NamedEntityExtractor nme = new NamedEntityExtractor();
             ArticleParser articleParser = switch (siteName) {
@@ -76,7 +76,7 @@ public class Application {
             };
             ArticleFetcher articleFetcher = new ArticleFetcher(articleParser);
 
-            var pages = IntStream.rangeClosed(1, 5);
+            var pages = IntStream.rangeClosed(fromPage, toPage);
             final WordFrequencyCounter wfc = new WordFrequencyCounter();
 
             // There are about 303 pages: range(1, 303)
