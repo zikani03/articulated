@@ -142,6 +142,7 @@
                                     <mainClass>me.zikani.labs.articulated.Application</mainClass>
                                 </transformer>
                             </transformers>
+                            <finalName>articulated</finalName>
                         </configuration>
                     </execution>
                 </executions>

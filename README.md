@@ -1,15 +1,16 @@
 Articulated
 ===
 
-Toy project to scrape articles from [nyasatimes.com](https://www.nyasatimes.com) and possibly other sites and play with that data.
+Toy project to scrape articles from some Malawian news sites to play with that data.
+This project uses an SQLite database to store the articles and runs a webserver to
+allow you to interact with the downloaded articles.
 
-Particularly, I want to play with some new features of Java including:
+Some cool stuff we use new/preview features of Java including:
 - `HttpClient` async requests, 
 - `var` keyword
 - `Virtual Threads`
+- `record`s
 - Switch Expressions,
-- ZGC
-- etc..
 
 ## Ideas and TODOs
 
@@ -28,6 +29,34 @@ What interesting things can we do with articles extracted from nyasatimes? Well 
 - ~Use virtualthreads for running the webscrapers~
 - Integrate Cloudy for semantic word clouds
 
-## Building
+## Supported sites so far
 
-You will need to have Java 16 and the latest Apache Maven, I recommend using IntelliJ's latest IDEA IDE.
+- [Nyasa Times](https://www.nyasatimes.com)
+- [Malawi24](https://malawi24.com)
+
+## Building / running
+
+You will need to have Java 15 and the latest Apache Maven, I recommend using IntelliJ's latest IDEA IDE.
+
+```sh
+$ git clone https://github.com/zikani03/articulated.git
+
+$ cd articulated
+
+$ mvn clean compile package
+
+$ java --enable-preview -jar target\articulated.jar 
+```
+
+This runs a webserver on port `localhost:4567` you can use the following curl request to download sports articles...
+
+```sh
+$ curl -X POST http://localhost:4567/articles/download/nyasatimes/sports?from=1&to=10
+```
+
+
+> DISCLAIMER: The content scraped from the sites is property of those publishers and this is intended for personal use. If you want to use this for some other purposes e.g. commercial purposes, speak to a lawyer. I am not a lawyer. YMMV  
+
+---
+
+Copyright (c) Zikani Nyirenda Mwase
