@@ -36,7 +36,7 @@ What interesting things can we do with articles extracted from nyasatimes? Well 
 
 ## Building / running
 
-You will need to have Java 15 and the latest Apache Maven, I recommend using IntelliJ's latest IDEA IDE.
+You will need to have Java JDK 17 and the latest Apache Maven, I recommend using IntelliJ's latest IDEA IDE.
 
 ```sh
 $ git clone https://github.com/zikani03/articulated.git
