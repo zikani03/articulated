@@ -27,6 +27,8 @@ import java.util.stream.IntStream;
 
 import static java.util.Collections.singletonMap;
 import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
+import static spark.Spark.ipAddress;
+import static spark.Spark.port;
 
 public class Application {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -34,6 +36,10 @@ public class Application {
     private static final int SLEEP_DURATION = 10_000;
 
     public static void main(String... args) {
+
+        ipAddress(System.getProperty("server.host", "localhost"));
+        port(Integer.parseInt(System.getProperty("server.port", "4567")));
+
         // String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
         final Jdbi jdbi = Jdbi.create("jdbc:sqlite:./nyasatimes.db");
         jdbi.installPlugin(new SqlObjectPlugin());
