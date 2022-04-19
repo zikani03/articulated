@@ -36,6 +36,7 @@ public class Application {
     private static final int SLEEP_DURATION = 10_000;
 
     public static void main(String... args) {
+        objectMapper.findAndRegisterModules();
 
         ipAddress(System.getProperty("server.host", "localhost"));
         port(Integer.parseInt(System.getProperty("server.port", "4567")));

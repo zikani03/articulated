@@ -19,6 +19,7 @@
     <properties>
         <failsafe.version>2.4.3</failsafe.version>
         <jackson.version>2.13.2.2</jackson.version>
+        <jackson-datatype-jsr310.version>2.13.2</jackson-datatype-jsr310.version>
         <jdbi.version>3.28.0</jdbi.version>
         <jetty.version>9.4.31.v20200723</jetty.version>
         <jsoup.version>1.14.3</jsoup.version>
@@ -72,6 +73,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson-datatype-jsr310.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
