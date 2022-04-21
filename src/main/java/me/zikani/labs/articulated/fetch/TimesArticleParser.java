@@ -41,39 +41,55 @@ import java.util.stream.Collectors;
 
 import static me.zikani.labs.articulated.Utils.sha1;
 
-
-public class Malawi24ArticleParser implements ArticleParser {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Malawi24ArticleParser.class);
+public class TimesArticleParser implements ArticleParser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimesArticleParser.class);
 
     /**
-     * Parses string containing html of an article and maps it to an {@link Article} instance
+     * Parses string containing html of an article on
+     * <a href="https://nyasatimes.com">Nyasa Times</a>
+     * and maps it to an {@link Article} instance
      * @param body
      * @param article
      * @return
      */
+    @Override
     public Article parseArticle(String body, final Article article) {
         try {
-            Element document = Jsoup.parse(body).getElementById("main-content");
+            Element document = Jsoup.parse(body).getElementById("content");
+            /**
+             * We are dealing with a structure like this for the HTML of the Article
+             *
+             * <h1 class="entry-title">Water, food security project formed to benefit 270mln people in Malawi, Kenya, Ghana</h1>
+             *
+             * <div class="entry-meta">
+             *   <span class="glyphicon glyphicon-calendar"></span> August 15, 2018
+             *   <span class="glyphicon glyphicon-user"> </span> Duncan Mlanjira - Nyasa Times
+             *   <a href="https://www.nyasatimes.com/water-food-security-project-formed-to-benefit-270mln-people-in-malawi-kenya-ghana/#respond"> <span class="glyphicon glyphicon-comment"> </span> Be the first to comment
+             * </div>
+             *
+             * <div class="entry-content">
+             *    <div rel="auto">Some text here</div>
+             * </div>
+             */
             article.setTitle(
-                // h1.entry-title
-                document.selectFirst("h1.entry-title").text()
+                    // h1.entry-title
+                    document.selectFirst("h1.nyasa-title").text()
             );
             StringJoiner sj = new StringJoiner("\n");
-            document.select("div.entry-content p")
-                .eachText()
-                .forEach(text -> sj.add(text));
+            document.select("div.nyasa-content")
+                    .eachText()
+                    .forEach(text -> sj.add(text));
 
             article.setBody(sj.toString());
 
             Element meta= document.selectFirst("div.entry-meta");
 
-            var formatter = DateTimeFormatter.ofPattern("MMM dd, u");
-            var author = meta.selectFirst(".entry-meta-author").selectFirst("a").text();
-            article.setAuthor(author.strip());
-
-            var date = meta.selectFirst(".entry-meta-date").selectFirst("a").text();
+            var formatter = DateTimeFormatter.ofPattern("MMMM d, yyyy");
+            var date = meta.textNodes().get(1).text();
             article.setPublishedOn(LocalDate.parse(date.trim(), formatter));
 
+            var author = meta.textNodes().get(2).text();
+            article.setAuthor(author.strip());
         } catch (DateTimeParseException ex) {
             LOGGER.error("Failed to parse article date", ex);
         } catch (Exception ex) {
@@ -82,16 +98,23 @@ public class Malawi24ArticleParser implements ArticleParser {
         return article;
     }
 
+    /**
+     * Given the HTML from a page like https://nyasatimes.com/category/business/page/2/
+     * extracts all the links to the articles from that page into a list
+     * of string uris/urls
+     *
+     * @param categoryPageBody
+     * @return
+     */
+    @Override
     public List<Article> followArticleLinks(String categoryPageBody) {
         Document document = Jsoup.parse(categoryPageBody);
-        return document.select(".entry-title.posts-list-title > a")
+        return document.select(".card-main-title > a")
                 .stream()
                 .map(anchor -> {
-                    String url = anchor.attr("href");
-                    // LoggerFactory.getLogger(getClass()).info("Found anchor: {}", url);
                     var a = new Article();
-                    a.setUrl(url);
-                    a.setId(sha1(url));
+                    a.setUrl(anchor.attr("href"));
+                    a.setId(sha1(a.getUrl()));
                     a.setCreated(Timestamp.valueOf(LocalDateTime.now()));
                     return a;
                 })
@@ -100,9 +123,9 @@ public class Malawi24ArticleParser implements ArticleParser {
 
     @Override
     public String getCategoryPageUrl(String category, int page) {
-        var url = String.format("https://www.malawi24.com/category/%s/page/%s/", category, page);
+        var url = String.format("https://www.nyasatimes.com/category/%s/page/%s/", category, page);
         if (page == 1) {
-            url = String.format("https://www.malawi24.com/category/%s/", category);
+            url = String.format("https://www.nyasatimes.com/category/%s/", category);
         }
         return url;
     }
