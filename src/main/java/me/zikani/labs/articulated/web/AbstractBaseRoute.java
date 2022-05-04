@@ -24,12 +24,29 @@
 package me.zikani.labs.articulated.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.jetty.http.HttpStatus;
+import spark.Response;
 import spark.Route;
+
+import java.io.IOException;
+
+import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
 
 public abstract class AbstractBaseRoute implements Route {
     protected final ObjectMapper objectMapper;
 
     public AbstractBaseRoute(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+    }
+
+    public String json(Response response, Object data) {
+        try {
+            response.type(APPLICATION_JSON.asString());
+            response.status(HttpStatus.OK_200);
+            return objectMapper.writeValueAsString(data);
+        } catch (IOException e) {
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR_500);
+            return "Server error";
+        }
     }
 }
