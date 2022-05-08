@@ -19,14 +19,14 @@ What interesting things can we do with articles extracted from nyasatimes? Well 
 - ~~Estimate reading times for the articles~~
 - ~~Use sqlite for caching articles~~
 - ~~Word frequency count~~
+- ~~Named Entity Extraction (places, people, businesses, etc..)~~ See [docs/ner.md](docs/ner.md)
 - Create a newsletter like PDF of the articles (e.g. articles for month of September)
 - Text to speech (Amazon Polly??)
 - Download images from the article and Base64 encode them for storage
-- Named Entity Extraction (places, people, businesses, etc..)
 - Play with String compression algorithms
 - Extract quotes from articles **"..." He said**, **"..." said Ndani ndani**
 - Find out how much money has been mentioned on NyasaTimes since 2016 categorized by keywords (donates, funds, wins, receives, aid etc..)
-- ~Use virtualthreads for running the webscrapers~
+- Use virtualthreads for running the webscrapers (waiting for Project Loom to reach GA :))
 - Integrate Cloudy for semantic word clouds
 
 ## Supported sites so far
