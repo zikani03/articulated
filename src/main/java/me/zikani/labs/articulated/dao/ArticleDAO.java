@@ -39,7 +39,7 @@ import java.util.List;
 public interface ArticleDAO {
 
     @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles WHERE id = :id")
-    Article get(@Bind String id);
+    Article get(@Bind("id") String id);
 
     @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles")
     List<Article> fetchAll();
@@ -50,7 +50,7 @@ public interface ArticleDAO {
     @SqlUpdate("INSERT INTO article_fts(articleId, body) SELECT id, body FROM articles;")
     void populateFts();
 
-    @SqlUpdate("INSERT INTO article_fts(articleId, body) VALUES (:id, :body);")
+    @SqlUpdate("INSERT INTO article_fts(articleId, body) VALUES (:e.id, :e.body);")
     void indexArticleInFts(@BindBean Article article);
 
     @Transaction
