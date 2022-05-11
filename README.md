@@ -5,29 +5,27 @@ Toy project to scrape articles from some Malawian news sites to play with that d
 This project uses an SQLite database to store the articles and runs a webserver to
 allow you to interact with the downloaded articles.
 
-Some cool stuff we use new/preview features of Java including:
-- `HttpClient` async requests, 
-- `var` keyword
-- `Virtual Threads`
-- `record`s
-- Switch Expressions,
+## Ideas and Objectives
 
-## Ideas and TODOs
-
-What interesting things can we do with articles extracted from nyasatimes? Well we could:
+What interesting things can we do:
 
 - ~~Estimate reading times for the articles~~
 - ~~Use sqlite for caching articles~~
 - ~~Word frequency count~~
 - ~~Named Entity Extraction (places, people, businesses, etc..)~~ See [docs/ner.md](docs/ner.md)
+- ~~Use Full Text Search functionalities of SQLite~~
+- ~~Use new built-in `HttpClient` for HTTP (async) requests~~
+- ~~Use new Java language features: `var` keyword, `record` and  Switch Expressions~~
+- Use jib to build the container for the project
 - Create a newsletter like PDF of the articles (e.g. articles for month of September)
 - Text to speech (Amazon Polly??)
 - Download images from the article and Base64 encode them for storage
 - Play with String compression algorithms
 - Extract quotes from articles **"..." He said**, **"..." said Ndani ndani**
 - Find out how much money has been mentioned on NyasaTimes since 2016 categorized by keywords (donates, funds, wins, receives, aid etc..)
-- Use virtualthreads for running the webscrapers (waiting for Project Loom to reach GA :))
-- Integrate Cloudy for semantic word clouds
+- Use `Virtual Threads`for running the webscrapers (waiting for Project Loom to reach GA :))
+- Integrate Cloudy for rendering semantic word clouds from articles
+- Add "pub/sub" for keywords - enable a person to subscribe to a keyword and send a webhook when we have an article that matches that keyword.
 
 ## Supported sites so far
 
