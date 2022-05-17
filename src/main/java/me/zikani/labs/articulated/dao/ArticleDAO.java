@@ -50,7 +50,7 @@ public interface ArticleDAO {
     @SqlUpdate("INSERT INTO article_fts(articleId, body) SELECT id, body FROM articles;")
     void populateFts();
 
-    @SqlUpdate("INSERT INTO article_fts(articleId, body) VALUES (:e.id, :e.body);")
+    @SqlUpdate("INSERT INTO article_fts(articleId, body) VALUES (:id, :body);")
     void indexArticleInFts(@BindBean Article article);
 
     @Transaction
