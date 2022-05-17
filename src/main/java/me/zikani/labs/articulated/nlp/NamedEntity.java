@@ -1,4 +1,4 @@
-/*
+/**
  * MIT License
  *
  * Copyright (c) 2020 - 2022 Zikani Nyirenda Mwase and Contributors
@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.zikani.labs.articulated.nlp;
 
 public record NamedEntity(String name, String entityType) {
