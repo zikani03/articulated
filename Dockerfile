@@ -21,9 +21,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-FROM openjdk:15-alpine
 MAINTAINER Zikani Nyirenda Mwase <zikani.nmwase@ymail.com>
-COPY ./target/articulated.jar /articulated.jar
+# This is a multi-stage build that uses two builder images to build the go service and the java service.
+FROM golang:1.17-alpine as go-builder
+RUN apk add --no-cache git
+WORKDIR /go/quickprosener
+COPY ./src/main/go/quickprosener .
+RUN go generate -x -v
+RUN go build -v -o /bin/quickprosener && chmod +x /bin/quickprosener
+
+FROM maven:3.8.5-eclipse-temurin-17-alpine as java-builder
+COPY . .
+RUN mvn -Dmaven.test.skip=1 install
+COPY ./target/articulated.jar /bin/articulated.jar
+
+FROM openjdk:17-alpine
+EXPOSE 4000
 EXPOSE 4567
-CMD [ "java", "-Dlogging.fileName=/logs/api.log", "--enable-preview", "-jar", "/articulated.jar" ]
+COPY --from=go-builder /bin/quickprosener /quickprosener
+COPY --from=java-builder /src/target/articulated.jar /articulated.jar
+# COPY ./target/articulated.jar /articulated.jar
+COPY ./docker-entrypoint.sh /docker-entrypoint.sh 
+RUN chmod +x /docker-entrypoint.sh
+CMD [ "/docker-entrypoint.sh"]

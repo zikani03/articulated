@@ -3,3 +3,4 @@ articulated.iml
 .idea
 *.db
 run.sh
+logs
