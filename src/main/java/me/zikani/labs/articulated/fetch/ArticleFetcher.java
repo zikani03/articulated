@@ -33,10 +33,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
+
+import static me.zikani.labs.articulated.Utils.sha1;
 
 public class ArticleFetcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(ArticleFetcher.class);
@@ -49,11 +52,7 @@ public class ArticleFetcher {
         this.articleParser = articleParser;
     }
 
-    public ConcurrentSkipListSet<Article> getFetchedArticles() {
-        return fetchedArticles;
-    }
-
-    public CompletableFuture<Stream<Article>> fetchFrom(String category, int page) throws InterruptedException, ExecutionException {
+    private HttpClient getHttpClient() {
         if (client == null) {
             client = HttpClient.newBuilder()
                     // TODO: use when loom lands : .executor(Executors.newVirtualThreadExecutor())
@@ -61,6 +60,13 @@ public class ArticleFetcher {
                     .followRedirects(HttpClient.Redirect.NORMAL)
                     .build();
         }
+        return client;
+    }
+    public ConcurrentSkipListSet<Article> getFetchedArticles() {
+        return fetchedArticles;
+    }
+
+    public CompletableFuture<Stream<Article>> fetchFrom(String category, int page) throws InterruptedException, ExecutionException {
         var stringBodyHandler = HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
         var url = articleParser.getCategoryPageUrl(category, page);
 
@@ -69,7 +75,7 @@ public class ArticleFetcher {
                 .uri(URI.create(url))
                 .build();
         LOGGER.info("Fetching articles from url={}", url);
-        return client.sendAsync(req, stringBodyHandler)
+        return getHttpClient().sendAsync(req, stringBodyHandler)
             .whenComplete((stringHttpResponse, throwable) -> {
                 if (throwable != null) {
                     LOGGER.error("Got an exception while requesting page: {}", stringHttpResponse.body(), throwable);
@@ -77,14 +83,8 @@ public class ArticleFetcher {
             })
             .thenApply(response -> articleParser.followArticleLinks(response.body()))
             .thenApply(articles -> articles.parallelStream()
-                .map(article -> {
-                    LoggerFactory.getLogger(getClass()).info("Fetching article: {}", article.getUrl());
-                    HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(article.getUrl()))
-                        .build();
-
-                    return client.sendAsync(request, stringBodyHandler)
-                        .thenApply(response -> articleParser.parseArticle(response.body(), article))
+                .map(article ->
+                    this.fetchSingleArticle(article.getUrl())
                         .whenComplete((fetchedArticle, exception) -> {
                             if (exception != null) {
                                 LOGGER.error("Failed to read article.", exception);
@@ -92,14 +92,34 @@ public class ArticleFetcher {
                             }
                             fetchedArticles.add(fetchedArticle);
                         })
-                        .toCompletableFuture();
-
-                })
+                        .toCompletableFuture())
                 // The caller must do something with the result otherwise the completable future wont complete!
                 .map(CompletableFuture::join));
     }
 
     public void clearFetchedArticles() {
         fetchedArticles.clear();
+    }
+
+    public CompletableFuture<Article> fetchSingleArticle(String articleUrl) {
+        Article article = new Article();
+        article.setUrl(Objects.requireNonNull(articleUrl, "articleUrl"));
+        article.setId(sha1(articleUrl));
+        var stringBodyHandler = HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8);
+
+        LoggerFactory.getLogger(getClass()).info("Fetching article: {}", article.getUrl());
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(article.getUrl()))
+                .build();
+
+        return getHttpClient().sendAsync(request, stringBodyHandler)
+                .thenApply(response -> articleParser.parseArticle(response.body(), article))
+                .whenComplete((fetchedArticle, exception) -> {
+                    if (exception != null) {
+                        LOGGER.error("Failed to read article.", exception);
+                        return;
+                    }
+                })
+                .toCompletableFuture();
     }
 }

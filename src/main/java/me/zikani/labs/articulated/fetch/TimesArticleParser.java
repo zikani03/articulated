@@ -44,6 +44,11 @@ import static me.zikani.labs.articulated.Utils.sha1;
 public class TimesArticleParser implements ArticleParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(TimesArticleParser.class);
 
+    @Override
+    public boolean canParseFrom(String url) {
+        return url.contains("times.mw");
+    }
+
     /**
      * Parses string containing html of an article on
      * <a href="https://nyasatimes.com">Nyasa Times</a>

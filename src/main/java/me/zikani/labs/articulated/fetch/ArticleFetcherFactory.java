@@ -21,19 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
- package me.zikani.labs.articulated.fetch;
+package me.zikani.labs.articulated.fetch;
 
-import me.zikani.labs.articulated.model.Article;
-
+import java.util.ArrayList;
 import java.util.List;
 
-public interface ArticleParser {
+public class ArticleFetcherFactory {
+    private static final List<ArticleParser> parsers = new ArrayList<>() {{
+        add(new NyasatimesArticleParser());
+        add(new Malawi24ArticleParser());
+        add(new TimesArticleParser());
+    }};
 
-    boolean canParseFrom(String url);
-
-    String getCategoryPageUrl(String category, int page);
-
-    Article parseArticle(String body, Article article);
-
-    List<Article> followArticleLinks(String categoryPageBody);
+    public ArticleFetcher getFetcherForURL(String url) {
+        for (var articleParser : parsers) {
+            if (articleParser.canParseFrom(url)) {
+                return new ArticleFetcher(articleParser);
+            }
+        }
+        throw new IllegalArgumentException("URL not recognized by any of the article parsers");
+    }
 }

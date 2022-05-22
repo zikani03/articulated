@@ -45,6 +45,11 @@ import static me.zikani.labs.articulated.Utils.sha1;
 public class Malawi24ArticleParser implements ArticleParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(Malawi24ArticleParser.class);
 
+    @Override
+    public boolean canParseFrom(String url) {
+        return url.contains("malawi24.com");
+    }
+
     /**
      * Parses string containing html of an article and maps it to an {@link Article} instance
      * @param body
