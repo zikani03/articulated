@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 MAINTAINER Zikani Nyirenda Mwase <zikani.nmwase@ymail.com>
 # This is a multi-stage build that uses two builder images to build the go service and the java service.
 FROM golang:1.17-alpine as go-builder
