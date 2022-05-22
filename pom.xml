@@ -188,7 +188,10 @@
                         <exclude>**/*.generated</exclude>
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.schema</exclude>
-
+                        <!-- Go files -->
+                        <exclude>**/go.mod</exclude>
+                        <exclude>**/go.sum</exclude>
+                        <exclude>**/*.go</exclude>
                         <!-- JDBC Drivers -->
                         <exclude>**/java.sql.*</exclude>
 
