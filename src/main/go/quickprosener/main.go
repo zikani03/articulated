@@ -26,11 +26,13 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/DavidBelicza/TextRank/v2"
 	"github.com/jdkato/prose/v2"
 )
 
 type NERResult struct {
-	Entities []NamedEntity `json:"entities"`
+	Entities       []NamedEntity `json:"entities"`
+	TextRankResult interface{}   `json:"rankedPhrases"`
 }
 
 type NamedEntity struct {
@@ -47,14 +49,27 @@ func main() {
 			return
 		}
 
-		doc, _ := prose.NewDocument(string(data))
+		dataString := string(data)
+
+		tr := textrank.NewTextRank()
+		rule := textrank.NewDefaultRule()
+		language := textrank.NewDefaultLanguage()
+		algo := textrank.NewDefaultAlgorithm()
+
+		tr.Populate(dataString, language, rule)
+		tr.Ranking(algo)
+
+		// 		rankedPhrases := textrank.FindPhrases(tr)
+		sentences := textrank.FindSentencesByRelationWeight(tr, 10)
+
+		doc, _ := prose.NewDocument(dataString)
 		result := NERResult{
-			Entities: make([]NamedEntity, 0),
+			Entities:       make([]NamedEntity, 0),
+			TextRankResult: sentences,
 		}
 
 		for _, ent := range doc.Entities() {
 			result.Entities = append(result.Entities, NamedEntity{EntityType: ent.Label, Name: ent.Text})
-			//fmt.Println(ent.Text, ent.Label)
 		}
 		data, err = json.Marshal(result)
 		if err != nil {

@@ -3,6 +3,7 @@ module go.zikani.me/labs/quickprosener
 go 1.17
 
 require (
+	github.com/DavidBelicza/TextRank/v2 v2.1.3 // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/jdkato/prose/v2 v2.0.0 // indirect
 	github.com/mingrammer/commonregex v1.0.1 // indirect
