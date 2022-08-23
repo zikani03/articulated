@@ -24,18 +24,19 @@
 package me.zikani.labs.articulated.model;
 
 
+import java.math.BigDecimal;
 import java.util.regex.Pattern;
 
 public class Amount {
     public static final Pattern KWACHA_REGEX_2 = Pattern.compile("(m?w?k)?\\s?(?<amount>\\d+(\\.?\\d+)?)\\s?(?<denomination>((hundred)?thousand|(m|b|tr)(illio)?n)(\\s+kwacha)?)");
 
-    private final double amount;
+    private final BigDecimal amount;
     private final String denomination;
     private final String currency;
-    private final double amountInDenomination;
+    private final BigDecimal amountInDenomination;
     private final String denominationRaw;
 
-    public Amount(String currency, double amountInDenomination, String denominationRaw) {
+    public Amount(String currency, BigDecimal amountInDenomination, String denominationRaw) {
         this.currency = currency;
         this.amountInDenomination = amountInDenomination;
         this.denominationRaw = denominationRaw;
@@ -49,11 +50,11 @@ public class Amount {
                 .replace("bn", "billion")
                 .replace("mn", "million");
     }
-    private double calcActualAmountInBaseDenomination() {
+    private BigDecimal calcActualAmountInBaseDenomination() {
         return switch (this.denomination) {
-            case "million" -> this.amountInDenomination * 1_000_000d;
-            case "billion" -> this.amountInDenomination * 1_000_000_000d;
-            case "trillion" -> this.amountInDenomination * 1_000_000_000_000d;
+            case "million" -> this.amountInDenomination.multiply(BigDecimal.valueOf(1_000_000d));
+            case "billion" -> this.amountInDenomination.multiply(BigDecimal.valueOf(1_000_000_000d));
+            case "trillion" -> this.amountInDenomination.multiply(BigDecimal.valueOf(1_000_000_000_000d));
             default -> this.amountInDenomination;
         };
     }
@@ -62,7 +63,7 @@ public class Amount {
         return currency;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 

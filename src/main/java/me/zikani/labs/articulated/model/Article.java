@@ -25,6 +25,7 @@ package me.zikani.labs.articulated.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -142,7 +143,7 @@ public class Article implements Comparable<Article> {
         Matcher m = KWACHA_REGEX_2.matcher(this.body.toLowerCase());
 
         while(m.find()) {
-            amounts.add(new Amount("MWK", Double.parseDouble(m.group("amount")), m.group("denomination")));
+            amounts.add(new Amount("MWK", new BigDecimal(m.group("amount")), m.group("denomination")));
         }
 
         return amounts;

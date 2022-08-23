@@ -39,8 +39,7 @@ import spark.Spark;
 
 import java.nio.file.Paths;
 
-import static spark.Spark.ipAddress;
-import static spark.Spark.port;
+import static spark.Spark.*;
 
 public class Application {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -49,8 +48,7 @@ public class Application {
 
     public static void main(String... args) {
         objectMapper.findAndRegisterModules();
-        ipAddress(System.getProperty("server.host", "localhost"));
-        port(Integer.parseInt(System.getProperty("server.port", "4567")));
+
         String databasePath = Paths.get("./articulated.db").toAbsolutePath().toString();
         final Jdbi jdbi = Jdbi.create(String.format("jdbc:sqlite:%s", databasePath));
         jdbi.installPlugin(new SqlObjectPlugin());
@@ -63,6 +61,11 @@ public class Application {
         articleDAO.createTable();
         articleDAO.createFtsTableIfNotExists();
         wordFrequencyDAO.createTable();
+
+        ipAddress(System.getProperty("server.host", "localhost"));
+        port(Integer.parseInt(System.getProperty("server.port", "4567")));
+
+        staticFileLocation("public");
 
         Spark.get("/articles", new ArticlesListRoute(objectMapper, articleDAO));
         Spark.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
