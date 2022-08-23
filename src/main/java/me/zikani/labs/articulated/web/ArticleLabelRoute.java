@@ -30,8 +30,8 @@ import me.zikani.labs.articulated.processor.WordFrequencyCounter;
 import spark.Request;
 import spark.Response;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This endpoint outputs articles as plaintext file for labeling in a format that's
@@ -50,11 +50,15 @@ public class ArticleLabelRoute extends AbstractBaseRoute {
         String query = request.queryParams("q");
         List<Article> articleList = articleDAO.searchArticles(query);
         WordFrequencyCounter wordFrequencyCounter = new WordFrequencyCounter();
-        StringBuilder sb = new StringBuilder();
+        List<String> sb = new ArrayList<>();
         wordFrequencyCounter.countForAll(new HashSet<>(articleList))
-                .forEach((word, freq) -> sb.append("\n").append(word).append("\t=>\t"));
+                .forEach((word, freq) -> sb.add(String.format("%s\t=>\t%s", word, freq)));
+
+        sb.sort(Comparator.naturalOrder());
+        String res = sb.stream().collect(Collectors.joining("\n"));
 
         response.type("text/plain");
-        return sb.toString();
+
+        return  res;
     }
 }
