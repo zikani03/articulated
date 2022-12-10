@@ -1,0 +1,119 @@
+<!--
+
+    MIT License
+
+    Copyright (c) 2020 - 2022 Zikani Nyirenda Mwase and Contributors
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+-->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Articulated</title>
+    <script src="js/axios.min.js"></script>
+    <script src="js/uFuzzy.iife.js"></script>
+    <script src="js/vue.global.js"></script>
+    <style type="text/css">
+        .search-results {
+            display: block;
+            width: 60%;
+            padding: 0.25em;
+            border: 1px solid rgb(200, 200, 200);
+            background: rgba(248, 248, 248);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Articulated</h1>
+    <div id="articulatedApp"></div>
+
+    <script type="text/html" id="main-template">
+        <h3>Articles</h3>
+        <div class="search-bar">
+            <input type="text"
+                   v-model="searchTerm"
+                   @keyup="performSearch"
+                   placeholder="Type something to search..." />
+            <div class="search-results">
+                <ul>
+                    <li v-for="a in searchResults" :key="a.url">
+                        <h5><a :href="a.url" target="_blank">{{ a.title }}</a></h5>
+                        <h6>Author: {{ a.author }}</h6>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </script>
+    <script type="text/javascript">
+
+
+
+        var app = Vue.createApp({
+            template: document.getElementById('main-template'),
+            data() {
+                return {
+                    articles: [],
+                    articleTextsForFuzzySearch: [],
+                    searchResults: [],
+                    searchTerm: '',
+                    _searchTimeout: 0,
+                    isLoadingArticles: false,
+                    isPerformingSearch: false,
+                    isSearchComplete: false,
+                }
+            },
+            mounted() {
+                axios.get("/articles")
+                    .then(response => {
+                        this.articles = response.data.articles
+                        this.articleTextsForFuzzySearch = this.articles.map(a => [a.title, a.body].join('~'))
+                    })
+            },
+
+            methods: {
+                performSearch(event) {
+                    event.preventDefault();
+                    // clear timeout variable
+                    clearTimeout(this.searchTimeout);
+
+                    var self = this;
+                    this.searchTimeout = setTimeout(function () {
+                        let fuzzySearcher = uFuzzy({})
+                        var idxs = fuzzySearcher.filter(self.articleTextsForFuzzySearch, self.searchTerm)
+                        self.searchResults = [];
+                        for (var i of idxs) {
+                            self.searchResults.push(self.articles[i]);
+                        }
+                    }, 1000);
+
+                    return false;
+                }
+            }
+        });
+
+        app.mount(document.getElementById("articulatedApp"));
+    </script>
+</body>
+</html>
