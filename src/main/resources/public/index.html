@@ -54,7 +54,7 @@
         <div class="search-bar">
             <input type="text"
                    v-model="searchTerm"
-                   @keyup="performSearch"
+                   @keyup="performAPISearch"
                    placeholder="Type something to search..." />
             <div class="search-results">
                 <ul>
@@ -107,6 +107,22 @@
                             self.searchResults.push(self.articles[i]);
                         }
                     }, 1000);
+
+                    return false;
+                },
+                performAPISearch(event) {
+                    event.preventDefault();
+                    // clear timeout variable
+                    clearTimeout(this.searchTimeout);
+
+                    var self = this;
+                    this.searchTimeout = setTimeout(function () {
+                        self.searchResults = [];
+                        axios.get(`/articles/search?q=${self.searchTerm}`)
+                            .then(response => {
+                                self.searchResults = response.data;
+                            })
+                    }, 500);
 
                     return false;
                 }

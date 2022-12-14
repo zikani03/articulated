@@ -26,9 +26,8 @@ package me.zikani.labs.articulated;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.dao.WordFrequencyDAO;
-import me.zikani.labs.articulated.fetch.ArticleFetcher;
 import me.zikani.labs.articulated.fetch.ArticleFetcherFactory;
-import me.zikani.labs.articulated.nlp.ProseNamedEntityRecognitionService;
+import me.zikani.labs.articulated.nlp.NeriaNamedEntityRecognitionService;
 import me.zikani.labs.articulated.web.*;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlite3.SQLitePlugin;
@@ -54,7 +53,7 @@ public class Application {
         jdbi.installPlugin(new SqlObjectPlugin());
         jdbi.installPlugin(new SQLitePlugin());
 
-        String proseApiUrl = System.getProperty("quickprosener.url", "http://localhost:4000");
+        String neriaURL = System.getProperty("neria.url", "https://neria-fly.fly.dev");
         final WordFrequencyDAO wordFrequencyDAO = jdbi.onDemand(WordFrequencyDAO.class);
         final ArticleDAO articleDAO = jdbi.onDemand(ArticleDAO.class);
 
@@ -73,7 +72,7 @@ public class Application {
         Spark.get("/articles/amounts", new ArticleAmountsRoute(objectMapper, articleDAO));
         Spark.get("/articles/download/from", new ArticleFetcherRoute(objectMapper, new ArticleFetcherFactory(), articleDAO));
         Spark.post("/articles/download/:site/:category", new ArticleDownloadRoute(objectMapper, articleDAO, SLEEP_DURATION));
-        Spark.get("/articles/entities/:id", new ArticleNamedEntitiesResource(objectMapper, articleDAO, new ProseNamedEntityRecognitionService(proseApiUrl, objectMapper)));
+        Spark.get("/articles/entities/:id", new ArticleNamedEntitiesResource(objectMapper, articleDAO, new NeriaNamedEntityRecognitionService(neriaURL, objectMapper)));
         Spark.get("/articulated.db", new DatabaseDownloadRoute(databasePath));
     }
 }

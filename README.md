@@ -43,7 +43,7 @@ $ cd articulated
 
 $ mvn clean compile package
 
-$ java --enable-preview -jar target\articulated.jar 
+$ java --enable-preview -Dspark.port="4567" -Dneria="https://neria-fly.fly.dev" -jar target\articulated.jar 
 ```
 
 This runs a webserver on port `localhost:4567` you can use the following curl request to download sports articles...

@@ -23,5 +23,7 @@
  */
 package me.zikani.labs.articulated.nlp;
 
-public record NamedEntity(String name, String entityType) {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record NamedEntity(@JsonProperty("Name") String name, @JsonProperty("EntityType")String entityType) {
 }

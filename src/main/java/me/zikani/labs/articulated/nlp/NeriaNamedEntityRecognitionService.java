@@ -23,6 +23,7 @@
  */
 package me.zikani.labs.articulated.nlp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.zikani.labs.articulated.model.Article;
 import org.slf4j.LoggerFactory;
@@ -35,12 +36,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProseNamedEntityRecognitionService implements NamedEntityRecognition {
+public class NeriaNamedEntityRecognitionService implements NamedEntityRecognition {
     private final String apiUrl;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public ProseNamedEntityRecognitionService(String apiUrl, ObjectMapper objectMapper) {
+    public NeriaNamedEntityRecognitionService(String apiUrl, ObjectMapper objectMapper) {
         this.apiUrl = apiUrl;
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
@@ -53,9 +54,12 @@ public class ProseNamedEntityRecognitionService implements NamedEntityRecognitio
 
         List<NamedEntity> namedEntities = new ArrayList<>();
         try {
+            Request neriaRequest = new Request();
+            neriaRequest.setText(article.getBody());
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(this.apiUrl))
-                    .POST(HttpRequest.BodyPublishers.ofString(article.getBody()))
+                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(neriaRequest)))
                     .build();
             byte[] json = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray()).body();
             ProseServiceResponse response = objectMapper.readValue(json, ProseServiceResponse.class);
@@ -66,7 +70,40 @@ public class ProseNamedEntityRecognitionService implements NamedEntityRecognitio
         return namedEntities;
     }
 
+    public static class Request {
+        @JsonProperty("Selector")
+        private String selector;
+        @JsonProperty("Text")
+        private String text;
+        @JsonProperty("Url")
+        private String url;
+
+        public String getSelector() {
+            return selector;
+        }
+
+        public void setSelector(String selector) {
+            this.selector = selector;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+    }
     private static class ProseServiceResponse {
+        @JsonProperty("Entities")
         List<NamedEntity> entities;
 
         public List<NamedEntity> getEntities() {
