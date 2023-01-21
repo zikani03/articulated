@@ -16,8 +16,9 @@ What interesting things can we do:
 - ~~Use Full Text Search functionalities of SQLite~~
 - ~~Use new built-in `HttpClient` for HTTP (async) requests~~
 - ~~Use new Java language features: `var` keyword, `record` and  Switch Expressions~~
+- ~~Publish Articles to a Kafka broker~~
 - Use jib to build the container for the project
-- Create a newsletter like PDF of the articles (e.g. articles for month of September)
+- Use Kapenta to create a newsletter like PDF of the articles (e.g. articles for month of September)
 - Text to speech (Amazon Polly??)
 - Download images from the article and Base64 encode them for storage
 - Play with String compression algorithms
@@ -43,7 +44,7 @@ $ cd articulated
 
 $ mvn clean compile package
 
-$ java --enable-preview -Dspark.port="4567" -Dneria="https://neria-fly.fly.dev" -jar target\articulated.jar 
+$ java --enable-preview -Dspark.port="4567" -Dneria.url="https://neria-fly.fly.dev" -jar target\articulated.jar 
 ```
 
 This runs a webserver on port `localhost:4567` you can use the following curl request to download sports articles...

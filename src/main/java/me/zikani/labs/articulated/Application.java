@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.dao.WordFrequencyDAO;
 import me.zikani.labs.articulated.fetch.ArticleFetcherFactory;
+import me.zikani.labs.articulated.kafka.KafkaArticlePublisher;
 import me.zikani.labs.articulated.nlp.NeriaNamedEntityRecognitionService;
 import me.zikani.labs.articulated.web.*;
 import org.jdbi.v3.core.Jdbi;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import spark.Spark;
 
 import java.nio.file.Paths;
+import java.util.Properties;
 
 import static spark.Spark.*;
 
@@ -57,6 +59,13 @@ public class Application {
         final WordFrequencyDAO wordFrequencyDAO = jdbi.onDemand(WordFrequencyDAO.class);
         final ArticleDAO articleDAO = jdbi.onDemand(ArticleDAO.class);
 
+        Properties props = new Properties();
+        props.setProperty("bootstrap.servers", System.getProperty("kafka.servers", "localhost:9092"));
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        final KafkaArticlePublisher kafkaPublisher = new KafkaArticlePublisher("article_ner_finder", props);
+
         articleDAO.createTable();
         articleDAO.createFtsTableIfNotExists();
         wordFrequencyDAO.createTable();
@@ -67,8 +76,9 @@ public class Application {
         staticFileLocation("public");
 
         Spark.get("/articles", new ArticlesListRoute(objectMapper, articleDAO));
-        Spark.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
         Spark.get("/articles/label", new ArticleLabelRoute(objectMapper, articleDAO));
+        Spark.post("/articles/publish-to-kafka", new ArticleKafkaPublisherRoute(objectMapper, articleDAO, kafkaPublisher));
+        Spark.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
         Spark.get("/articles/amounts", new ArticleAmountsRoute(objectMapper, articleDAO));
         Spark.get("/articles/download/from", new ArticleFetcherRoute(objectMapper, new ArticleFetcherFactory(), articleDAO));
         Spark.post("/articles/download/:site/:category", new ArticleDownloadRoute(objectMapper, articleDAO, SLEEP_DURATION));

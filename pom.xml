@@ -31,6 +31,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            <id>confluent</id>-->
+<!--            <url>https://packages.confluent.io/maven/</url>-->
+<!--        </repository>-->
+<!--    </repositories>-->
+
     <dependencies>
         <dependency>
             <groupId>com.sparkjava</groupId>
@@ -68,6 +75,22 @@
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>${jsoup.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>3.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>technology.semi.weaviate</groupId>
+            <artifactId>client</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.natty-parser</groupId>
+            <artifactId>natty</artifactId>
+            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
