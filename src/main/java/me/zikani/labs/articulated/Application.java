@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.dao.WordFrequencyDAO;
 import me.zikani.labs.articulated.fetch.ArticleFetcherFactory;
+import me.zikani.labs.articulated.greypot.GreypotHttpClient;
 import me.zikani.labs.articulated.kafka.KafkaArticlePublisher;
 import me.zikani.labs.articulated.nlp.NeriaNamedEntityRecognitionService;
 import me.zikani.labs.articulated.web.*;
@@ -55,7 +56,10 @@ public class Application {
         jdbi.installPlugin(new SqlObjectPlugin());
         jdbi.installPlugin(new SQLitePlugin());
 
+
         String neriaURL = System.getProperty("neria.url", "https://neria-fly.fly.dev");
+        String greypotURL = System.getProperty("greypot.url", "https://greypot-studio.fly.dev");
+
         final WordFrequencyDAO wordFrequencyDAO = jdbi.onDemand(WordFrequencyDAO.class);
         final ArticleDAO articleDAO = jdbi.onDemand(ArticleDAO.class);
 
@@ -84,5 +88,7 @@ public class Application {
         Spark.post("/articles/download/:site/:category", new ArticleDownloadRoute(objectMapper, articleDAO, SLEEP_DURATION));
         Spark.get("/articles/entities/:id", new ArticleNamedEntitiesResource(objectMapper, articleDAO, new NeriaNamedEntityRecognitionService(neriaURL, objectMapper)));
         Spark.get("/articulated.db", new DatabaseDownloadRoute(databasePath));
+        Spark.get("/articles/:id/pdf", new ArticlesPDFRoute(objectMapper, articleDAO, new GreypotHttpClient(greypotURL, objectMapper)));
+        // todo: Spark.post("/natty", new NattyRoute());
     }
 }

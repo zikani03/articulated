@@ -17,8 +17,9 @@ What interesting things can we do:
 - ~~Use new built-in `HttpClient` for HTTP (async) requests~~
 - ~~Use new Java language features: `var` keyword, `record` and  Switch Expressions~~
 - ~~Publish Articles to a Kafka broker~~
+- ~~Use Greypot to generate PDF from an article~~
+- Use Greypot to generate a basic newsletter like PDF of the articles (e.g. articles for month of September)
 - Use jib to build the container for the project
-- Use Kapenta to create a newsletter like PDF of the articles (e.g. articles for month of September)
 - Text to speech (Amazon Polly??)
 - Download images from the article and Base64 encode them for storage
 - Play with String compression algorithms
