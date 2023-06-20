@@ -18,9 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Testcontainers
 public class RedisIndexTest {
 
-//    @Container
-//    public GenericContainer zincSearch = new GenericContainer(DockerImageName.parse("zincsearch:5.0.3-alpine"))
-//            .withExposedPorts(6379);
     @Container
     public GenericContainer redisC = new GenericContainer(DockerImageName.parse("redis:5.0.3-alpine"))
             .withExposedPorts(6379);
@@ -33,7 +30,7 @@ public class RedisIndexTest {
     }
 
     @Test
-    public void testCanIndexWithZinc() {
+    public void testCanSetArticlesOnRedis() {
         Jdbi jdbi = Jdbi.create("jdbc:sqlite:articulated.db");
         jdbi.installPlugin(new SqlObjectPlugin());
 
