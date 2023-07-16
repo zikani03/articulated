@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static me.zikani.labs.articulated.model.Amount.KWACHA_REGEX_2;
 
@@ -147,5 +148,17 @@ public class Article implements Comparable<Article> {
         }
 
         return amounts;
+    }
+
+    public int countOccurencesOf(String keyword) {
+        final var lowerBody = this.body.toLowerCase();
+        var keywordCapture = String.format("(?<keyword>\s?(%s)\s?)", keyword.toLowerCase());
+        Pattern keywordPattern = Pattern.compile(keywordCapture);
+        Matcher m = keywordPattern.matcher(this.body.toLowerCase());
+        int occurences = 0;
+        while(m.find()) {
+            occurences++;
+        }
+        return occurences;
     }
 }

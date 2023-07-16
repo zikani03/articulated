@@ -84,6 +84,7 @@ public class Application {
         Spark.post("/articles/publish-to-kafka", new ArticleKafkaPublisherRoute(objectMapper, articleDAO, kafkaPublisher));
         Spark.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
         Spark.get("/articles/amounts", new ArticleAmountsRoute(objectMapper, articleDAO));
+        Spark.get("/articles/amounts/feature0", new ArticleFeature0Route(objectMapper, articleDAO));
         Spark.get("/articles/download/from", new ArticleFetcherRoute(objectMapper, new ArticleFetcherFactory(), articleDAO));
         Spark.post("/articles/download/:site/:category", new ArticleDownloadRoute(objectMapper, articleDAO, SLEEP_DURATION));
         Spark.get("/articles/entities/:id", new ArticleNamedEntitiesResource(objectMapper, articleDAO, new NeriaNamedEntityRecognitionService(neriaURL, objectMapper)));

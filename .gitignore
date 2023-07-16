@@ -4,3 +4,4 @@ articulated.iml
 *.db
 run.sh
 logs
+/venv/
