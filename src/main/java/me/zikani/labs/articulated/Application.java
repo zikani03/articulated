@@ -90,6 +90,6 @@ public class Application {
         Spark.get("/articles/entities/:id", new ArticleNamedEntitiesResource(objectMapper, articleDAO, new NeriaNamedEntityRecognitionService(neriaURL, objectMapper)));
         Spark.get("/articulated.db", new DatabaseDownloadRoute(databasePath));
         Spark.get("/articles/:id/pdf", new ArticlesPDFRoute(objectMapper, articleDAO, new GreypotHttpClient(greypotURL, objectMapper)));
-        // todo: Spark.post("/natty", new NattyRoute());
+        Spark.post("/natty", new NattyRoute());
     }
 }

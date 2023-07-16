@@ -5,3 +5,4 @@ articulated.iml
 run.sh
 logs
 /venv/
+/data/
