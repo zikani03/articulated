@@ -3,10 +3,13 @@ package me.zikani.labs.articulated.ml;
 import lombok.Data;
 import me.zikani.labs.articulated.model.Amount;
 import me.zikani.labs.articulated.model.Article;
+import me.zikani.labs.articulated.processor.WordFrequencyCounter;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 public class ArticleFeature0 {
@@ -32,37 +35,11 @@ public class ArticleFeature0 {
     private Integer numTrillionsValuesMWK;
 
     private Integer numGreaterThanTrillionsValuesMWK;
-
-    private Integer numKeywordDonations;
-
-    private Integer numKeywordStolen;
-
-    private Integer numKeywordFunding;
-
-    private Integer numKeywordWins;
-
-    private Integer numKeywordCorruption;
-
-    private Integer numKeywordBudget;
-
-    private Integer numKeywordDisbursed;
-
-    private Integer numKeywordLoan;
-
-    private Integer numKeywordBorrowed;
-
-    private Integer numKeywordCredit;
-
-    private Integer numKeywordSponsor;
-
-    private Integer numKeywordMWK;
-
-    private Integer numKeywordUSD;
-
-
+    private Map<String, Integer> keywords;
 
     public static ArticleFeature0 make(Article article) {
         ArticleFeature0 feature0 = new ArticleFeature0();
+        feature0.keywords = new HashMap<>();
 
         BigDecimal minAmount = BigDecimal.ZERO, maxAmount = BigDecimal.ZERO;
         int hundreds = 0, thousands = 0, millions = 0, billions = 0, trillions = 0, overTrillions = 0;
@@ -97,20 +74,30 @@ public class ArticleFeature0 {
         feature0.setNumGreaterThanTrillionsValuesMWK(overTrillions);
         feature0.setTimestamp(article.getPublishedOn().toEpochSecond(LocalTime.now(), ZoneOffset.UTC));
 
-        feature0.setNumKeywordBudget(article.countOccurencesOf("budget"));
-        feature0.setNumKeywordBorrowed(article.countOccurencesOf("borrowed"));
-        feature0.setNumKeywordCredit(article.countOccurencesOf("credit"));
-        feature0.setNumKeywordFunding(article.countOccurencesOf("funding"));
-        feature0.setNumKeywordDonations(article.countOccurencesOf("donates|donation"));
-        feature0.setNumKeywordLoan(article.countOccurencesOf("loan"));
-        feature0.setNumKeywordCorruption(article.countOccurencesOf("corruption"));
-        feature0.setNumKeywordMWK(article.countOccurencesOf("mwk"));
-        feature0.setNumKeywordUSD(article.countOccurencesOf("usd"));
-        feature0.setNumKeywordStolen(article.countOccurencesOf("stolen"));
-        feature0.setNumKeywordWins(article.countOccurencesOf("wins|winner"));
-        feature0.setNumKeywordDisbursed(article.countOccurencesOf("disbursed"));
-        feature0.setNumKeywordSponsor(article.countOccurencesOf("sponsors"));
+        feature0.countAndSet("budget", "budget", article);
+        feature0.countAndSet("revenue", "revenue|revenues|profits|sales", article);
+        feature0.countAndSet("borrowed", article);
+        feature0.countAndSet("credit", article);
+        feature0.countAndSet("funding", "fund|funding", article);
+        feature0.countAndSet("donations", "donates|donation", article);
+        feature0.countAndSet("fundraiser", "fundraiser|fundraising", article);
+        feature0.countAndSet("loan", "loan|loans", article);
+        feature0.countAndSet("corruption", article);
+        feature0.countAndSet("bribes", article);
+        feature0.countAndSet("mwk", article);
+        feature0.countAndSet("usd", article);
+        feature0.countAndSet("stolen", article);
+        feature0.countAndSet("win", "wins|winner|winnings", article);
+        feature0.countAndSet("disbursed", article);
+        feature0.countAndSet("sponsorship", "sponsor|sponsors|sponsorship", article);
 
         return feature0;
+    }
+
+    private void countAndSet(String keywordKey, Article article) {
+        this.keywords.put(keywordKey, article.countOccurencesOf(keywordKey));
+    }
+    private void countAndSet(String keywordKey, String keywordValue, Article article) {
+        this.keywords.put(keywordKey, article.countOccurencesOf(keywordValue));
     }
 }
