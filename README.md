@@ -12,7 +12,7 @@ What interesting things can we do:
 - ~~Estimate reading times for the articles~~
 - ~~Use sqlite for caching articles~~
 - ~~Word frequency count~~
-- ~~Named Entity Extraction (places, people, businesses, etc..)~~ See [docs/ner.md](docs/ner.md)
+- ~~Named Entity Extraction (places, people, businesses, etc..)~~ via [NERIA](https://github.com/zikani03/neria)
 - ~~Use Full Text Search functionalities of SQLite~~
 - ~~Use new built-in `HttpClient` for HTTP (async) requests~~
 - ~~Use new Java language features: `var` keyword, `record` and  Switch Expressions~~
