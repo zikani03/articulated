@@ -94,6 +94,49 @@
             <artifactId>jedis</artifactId>
             <version>${jedis.version}</version>
         </dependency>
+        <!-- tribuo dependencies -->
+        <dependency>
+            <groupId>org.tribuo</groupId>
+            <artifactId>tribuo-core</artifactId>
+            <version>${tribuo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tribuo</groupId>
+            <artifactId>tribuo-classification-core</artifactId>
+            <version>${tribuo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tribuo</groupId>
+            <artifactId>tribuo-multilabel-core</artifactId>
+            <version>${tribuo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tribuo</groupId>
+            <artifactId>tribuo-classification-sgd</artifactId>
+            <version>${tribuo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tribuo</groupId>
+            <artifactId>tribuo-classification-libsvm</artifactId>
+            <version>${tribuo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tribuo</groupId>
+            <artifactId>tribuo-common-libsvm</artifactId>
+            <version>${tribuo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tribuo</groupId>
+            <artifactId>tribuo-json</artifactId>
+            <version>${tribuo.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.haifengl/smile-core -->
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-core</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <!-- tribuo dependencies -->
         <dependency>
             <groupId>com.meilisearch.sdk</groupId>
             <artifactId>meilisearch-java</artifactId>
