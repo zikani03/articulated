@@ -56,7 +56,6 @@ public class Application {
         jdbi.installPlugin(new SqlObjectPlugin());
         jdbi.installPlugin(new SQLitePlugin());
 
-
         String neriaURL = System.getProperty("neria.url", "https://neria-fly.fly.dev");
         String greypotURL = System.getProperty("greypot.url", "https://greypot-studio.fly.dev");
 

@@ -24,12 +24,17 @@
 package me.zikani.labs.articulated.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -161,4 +166,74 @@ public class Article implements Comparable<Article> {
         }
         return occurences;
     }
+
+    public static ArticleFeature0 makeFeature(Article article) {
+        ArticleFeature0 articleFeatureData = new ArticleFeature0();
+        articleFeatureData.features = new HashMap<>();
+
+        BigDecimal minAmount = BigDecimal.ZERO, maxAmount = BigDecimal.ZERO;
+        int hundreds = 0, thousands = 0, millions = 0, billions = 0, trillions = 0, overTrillions = 0;
+        for (Amount amount: article.getMentionedAmounts()) {
+            minAmount = minAmount.min(amount.getAmount());
+            maxAmount = maxAmount.max(amount.getAmount());
+
+            if (amount.getAmount().longValue()  >= 100 && amount.getAmount().longValue() < 1e3) {
+                hundreds++;
+            } else if (amount.getAmount().longValue()  >= 1e3 && amount.getAmount().longValue() < 1e6) {
+                thousands++;
+            } else if (amount.getAmount().longValue()  >= 1e6 && amount.getAmount().longValue() < 1e9) {
+                millions++;
+            } else if (amount.getAmount().longValue()  >= 1e9 && amount.getAmount().longValue() < 1e12) {
+                billions++;
+            } else if (amount.getAmount().longValue()  >= 1e12 && amount.getAmount().longValue() < 1e15) {
+                trillions++;
+            } else if (amount.getAmount().longValue() > 1e15) {
+                overTrillions++;
+            }
+        }
+
+        articleFeatureData.features.put("article_id", article.getId());
+        articleFeatureData.features.put("article_title", article.getTitle());
+        articleFeatureData.features.put("min_amount_mwk", minAmount);
+        articleFeatureData.features.put("max_amount_mwk", maxAmount);
+        articleFeatureData.features.put("num_hundreds_values_mwk", hundreds);
+        articleFeatureData.features.put("num_thousands_values_mwk", thousands);
+        articleFeatureData.features.put("num_millions_values_mwk", millions);
+        articleFeatureData.features.put("num_billions_values_mwk", billions);
+        articleFeatureData.features.put("num_trillions_values_mwk", trillions);
+        articleFeatureData.features.put("num_greater_than_trillions_values_mwk", overTrillions);
+        articleFeatureData.features.put("timestamp", article.getPublishedOn().toEpochSecond(LocalTime.now(), ZoneOffset.UTC));
+
+        articleFeatureData.countAndSet("budget", "budget", article);
+        articleFeatureData.countAndSet("revenue", "revenue|revenues|profits|sales", article);
+        articleFeatureData.countAndSet("borrowed", article);
+        articleFeatureData.countAndSet("credit", article);
+        articleFeatureData.countAndSet("funding", "fund|funding", article);
+        articleFeatureData.countAndSet("donations", "donates|donation", article);
+        articleFeatureData.countAndSet("fundraiser", "fundraiser|fundraising", article);
+        articleFeatureData.countAndSet("loan", "loan|loans", article);
+        articleFeatureData.countAndSet("corruption", article);
+        articleFeatureData.countAndSet("bribes", article);
+        articleFeatureData.countAndSet("mwk", article);
+        articleFeatureData.countAndSet("usd", article);
+        articleFeatureData.countAndSet("stolen", article);
+        articleFeatureData.countAndSet("win", "wins|winner|winnings", article);
+        articleFeatureData.countAndSet("disbursed", article);
+        articleFeatureData.countAndSet("sponsorship", "sponsor|sponsors|sponsorship", article);
+
+        return articleFeatureData;
+    }
+
+    @Data
+    public static class ArticleFeature0 {
+        private Map<String, Object> features;
+
+        private void countAndSet(String keywordKey, Article article) {
+            this.features.put(keywordKey, article.countOccurencesOf(keywordKey));
+        }
+        private void countAndSet(String keywordKey, String keywordValue, Article article) {
+            this.features.put(keywordKey, article.countOccurencesOf(keywordValue));
+        }
+    }
+
 }
