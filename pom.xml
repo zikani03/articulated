@@ -29,6 +29,8 @@
         <micrometer.version>1.11.0</micrometer.version>
         <testcontainers.version>1.18.3</testcontainers.version>
         <java.version>17</java.version>
+        <jedis.version>5.0.0-beta2</jedis.version>
+        <tribuo.version>4.3.1</tribuo.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -90,7 +92,7 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>4.3.0</version>
+            <version>${jedis.version}</version>
         </dependency>
         <dependency>
             <groupId>com.meilisearch.sdk</groupId>
