@@ -44,6 +44,9 @@ public interface ArticleDAO {
     @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles")
     List<Article> fetchAll();
 
+    @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles ORDER BY RANDOM() LIMIT 1")
+    Article getRandomArticle();
+
     @SqlUpdate("CREATE VIRTUAL TABLE IF NOT EXISTS article_fts USING fts5(articleId UNINDEXED, body);")
     void createFtsTableIfNotExists();
 

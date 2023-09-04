@@ -80,6 +80,7 @@ public class Application {
 
         Spark.get("/articles", new ArticlesListRoute(objectMapper, articleDAO));
         Spark.get("/articles/label", new ArticleLabelRoute(objectMapper, articleDAO));
+        Spark.get("/articles/random", new ArticleGetRandomRoute(objectMapper, articleDAO));
         Spark.post("/articles/publish-to-kafka", new ArticleKafkaPublisherRoute(objectMapper, articleDAO, kafkaPublisher));
         Spark.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
         Spark.get("/articles/amounts", new ArticleAmountsRoute(objectMapper, articleDAO));
