@@ -62,12 +62,6 @@ public class Application {
         final WordFrequencyDAO wordFrequencyDAO = jdbi.onDemand(WordFrequencyDAO.class);
         final ArticleDAO articleDAO = jdbi.onDemand(ArticleDAO.class);
 
-        Properties props = new Properties();
-        props.setProperty("bootstrap.servers", System.getProperty("kafka.servers", "localhost:9092"));
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-
-        final KafkaArticlePublisher kafkaPublisher = new KafkaArticlePublisher("article_ner_finder", props);
 
         articleDAO.createTable();
         articleDAO.createFtsTableIfNotExists();
@@ -81,7 +75,7 @@ public class Application {
         Spark.get("/articles", new ArticlesListRoute(objectMapper, articleDAO));
         Spark.get("/articles/label", new ArticleLabelRoute(objectMapper, articleDAO));
         Spark.get("/articles/random", new ArticleGetRandomRoute(objectMapper, articleDAO));
-        Spark.post("/articles/publish-to-kafka", new ArticleKafkaPublisherRoute(objectMapper, articleDAO, kafkaPublisher));
+
         Spark.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
         Spark.get("/articles/amounts", new ArticleAmountsRoute(objectMapper, articleDAO));
         Spark.get("/articles/amounts/feature0", new ArticleFeature0Route(objectMapper, articleDAO));
@@ -91,5 +85,16 @@ public class Application {
         Spark.get("/articulated.db", new DatabaseDownloadRoute(databasePath));
         Spark.get("/articles/:id/pdf", new ArticlesPDFRoute(objectMapper, articleDAO, new GreypotHttpClient(greypotURL, objectMapper)));
         Spark.post("/natty", new NattyRoute());
+
+        var enableKafkaPublisher = Boolean.getBoolean("kafka.enabled");
+        if (enableKafkaPublisher) {
+            Properties props = new Properties();
+            props.setProperty("bootstrap.servers", System.getProperty("kafka.servers", "localhost:9092"));
+            props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+            final KafkaArticlePublisher kafkaPublisher = new KafkaArticlePublisher("article_ner_finder", props);
+            Spark.post("/articles/publish-to-kafka", new ArticleKafkaPublisherRoute(objectMapper, articleDAO, kafkaPublisher));
+        }
     }
 }
