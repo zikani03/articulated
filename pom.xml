@@ -18,14 +18,15 @@
 
     <properties>
         <failsafe.version>2.4.3</failsafe.version>
-        <jackson.version>2.13.2.2</jackson.version>
-        <jackson-datatype-jsr310.version>2.13.2</jackson-datatype-jsr310.version>
+        <jackson.version>2.15.3</jackson.version>
+        <jackson-datatype-jsr310.version>2.15.3</jackson-datatype-jsr310.version>
         <jdbi.version>3.28.0</jdbi.version>
         <jetty.version>9.4.31.v20200723</jetty.version>
-        <jsoup.version>1.14.3</jsoup.version>
+        <jsoup.version>1.16.1</jsoup.version>
         <junit5.version>5.8.1</junit5.version>
         <slf4j.version>1.7.32</slf4j.version>
         <spark.version>2.9.3</spark.version>
+        <sqlite-jdbc.version>3.43.2.1</sqlite-jdbc.version>
         <micrometer.version>1.11.0</micrometer.version>
         <testcontainers.version>1.18.3</testcontainers.version>
         <java.version>17</java.version>
@@ -67,7 +68,7 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.36.0.2</version>
+            <version>${sqlite-jdbc.version}</version>
         </dependency>
         <dependency>
             <groupId>net.jodah</groupId>
