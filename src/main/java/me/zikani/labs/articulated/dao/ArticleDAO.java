@@ -33,6 +33,8 @@ import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.jdbi.v3.sqlobject.transaction.Transaction;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @RegisterBeanMapper(Article.class)
@@ -43,6 +45,12 @@ public interface ArticleDAO {
 
     @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles")
     List<Article> fetchAll();
+    @SqlQuery("""
+    SELECT id, url, title, author, publishedOn, body, readingTime, created 
+    FROM articles
+    WHERE publishedOn = :publishedOn
+    """)
+    List<Article> findAllByDate(@Bind("publishedOn") LocalDate date);
 
     @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles ORDER BY RANDOM() LIMIT 1")
     Article getRandomArticle();

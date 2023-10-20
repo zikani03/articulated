@@ -73,6 +73,7 @@ public class Application {
         staticFileLocation("public");
 
         Spark.get("/articles", new ArticlesListRoute(objectMapper, articleDAO));
+        Spark.get("/articles/published-on/:date", new ArticlesListByDateRoute(objectMapper, articleDAO));
         Spark.get("/articles/label", new ArticleLabelRoute(objectMapper, articleDAO));
         Spark.get("/articles/random", new ArticleGetRandomRoute(objectMapper, articleDAO));
 

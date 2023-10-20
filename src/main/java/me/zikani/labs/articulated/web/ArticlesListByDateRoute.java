@@ -24,49 +24,38 @@
 package me.zikani.labs.articulated.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.zikani.labs.articulated.dao.ArticleDAO;
 import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.LoggerFactory;
+import spark.Request;
 import spark.Response;
-import spark.Route;
 
-import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
+import static java.util.Collections.singletonMap;
 import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
 
-public abstract class AbstractBaseRoute implements Route {
-    protected final ObjectMapper objectMapper;
+public class ArticlesListByDateRoute extends AbstractBaseRoute {
+    private final ArticleDAO articleDAO;
 
-    public AbstractBaseRoute(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public ArticlesListByDateRoute(ObjectMapper objectMapper, ArticleDAO articleDAO) {
+        super(objectMapper);
+        this.articleDAO = articleDAO;
     }
 
-    public String json(Response response, Object data) {
+    @Override
+    public Object handle(Request request, Response response) throws Exception {
+        response.type(APPLICATION_JSON.asString());
+        String dateParam = request.params("date");
         try {
-            response.type(APPLICATION_JSON.asString());
-            response.status(HttpStatus.OK_200);
-            return objectMapper.writeValueAsString(data);
-        } catch (IOException e) {
-            response.status(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            return "Server error";
-        }
-    }
-    public String badRequest(Response response, Object data) {
-        try {
-            response.type(APPLICATION_JSON.asString());
-            response.status(HttpStatus.BAD_REQUEST_400);
-            return objectMapper.writeValueAsString(data);
-        } catch (IOException e) {
-            response.status(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            return "Server error";
-        }
-    }
-    public String internalServerError(Response response, Object data) {
-        try {
-            response.type(APPLICATION_JSON.asString());
-            response.status(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            return objectMapper.writeValueAsString(data);
-        } catch (IOException e) {
-            response.status(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            return "Server error";
+            var date = LocalDate.parse(dateParam);
+            return objectMapper.writeValueAsString(singletonMap("articles", articleDAO.findAllByDate(date)));
+        } catch (DateTimeParseException e) {
+            return badRequest(response, singletonMap("message", "invalid date param"));
+        } catch (Exception e) {
+            LoggerFactory.getLogger(getClass()).error("failed to proces request got error", e);
+            return internalServerError(response, singletonMap("message", "server error processing request"));
         }
     }
 }
