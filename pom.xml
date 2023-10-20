@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.zikani.labs</groupId>
     <artifactId>articulated</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 
     <name>Articulated</name>
-    <description>Play with libraries using data from nyasatimes.com.</description>
+    <description>Play with libraries using data from Malawian news sources</description>
 
     <developers>
         <developer>
@@ -34,13 +34,6 @@
         <tribuo.version>4.3.1</tribuo.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-<!--    <repositories>-->
-<!--        <repository>-->
-<!--            <id>confluent</id>-->
-<!--            <url>https://packages.confluent.io/maven/</url>-->
-<!--        </repository>-->
-<!--    </repositories>-->
 
     <dependencies>
         <dependency>
