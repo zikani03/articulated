@@ -17,20 +17,22 @@
     </developers>
 
     <properties>
-        <failsafe.version>2.4.3</failsafe.version>
-        <jackson.version>2.15.3</jackson.version>
-        <jackson-datatype-jsr310.version>2.15.3</jackson-datatype-jsr310.version>
-        <jdbi.version>3.28.0</jdbi.version>
+        <failsafe.version>3.3.2</failsafe.version>
+        <jackson.version>2.16.0</jackson.version>
+        <jackson-datatype-jsr310.version>2.16.0</jackson-datatype-jsr310.version>
+        <jdbi.version>3.42.0</jdbi.version>
         <jetty.version>9.4.31.v20200723</jetty.version>
-        <jsoup.version>1.16.1</jsoup.version>
-        <junit5.version>5.8.1</junit5.version>
-        <slf4j.version>1.7.32</slf4j.version>
-        <spark.version>2.9.3</spark.version>
-        <sqlite-jdbc.version>3.43.2.1</sqlite-jdbc.version>
+        <jsoup.version>1.17.1</jsoup.version>
+        <junit5.version>5.10.1</junit5.version>
+        <slf4j.version>2.0.9</slf4j.version>
+        <spark.version>2.9.4</spark.version>
+        <sqlite-jdbc.version>3.44.1.0</sqlite-jdbc.version>
         <micrometer.version>1.11.0</micrometer.version>
         <testcontainers.version>1.18.3</testcontainers.version>
         <java.version>21</java.version>
-        <jedis.version>5.0.0-beta2</jedis.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <jedis.version>5.1.0</jedis.version>
         <tribuo.version>4.3.1</tribuo.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -64,7 +66,7 @@
             <version>${sqlite-jdbc.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.jodah</groupId>
+            <groupId>dev.failsafe</groupId>
             <artifactId>failsafe</artifactId>
             <version>${failsafe.version}</version>
         </dependency>
@@ -134,18 +136,18 @@
         <dependency>
             <groupId>com.meilisearch.sdk</groupId>
             <artifactId>meilisearch-java</artifactId>
-            <version>0.11.1</version>
+            <version>0.11.5</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>3.3.2</version>
+            <version>3.6.1</version>
         </dependency>
         <dependency>
-            <groupId>technology.semi.weaviate</groupId>
+            <groupId>io.weaviate</groupId>
             <artifactId>client</artifactId>
-            <version>3.2.0</version>
+            <version>4.4.2</version>
         </dependency>
         <dependency>
             <groupId>io.github.natty-parser</groupId>
@@ -170,7 +172,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.11</version>
+            <version>1.4.14</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -192,27 +194,14 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>clulab-processors</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.clulab</groupId>
-                    <artifactId>processors-main_2.12</artifactId>
-                    <version>8.4.9</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
-
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.11.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -222,7 +211,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
