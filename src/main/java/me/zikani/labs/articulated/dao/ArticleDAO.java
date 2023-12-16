@@ -90,15 +90,5 @@ public interface ArticleDAO {
     """)
     void saveAll(@BindBean List<Article> articles);
 
-    @SqlUpdate("CREATE TABLE IF NOT EXISTS articles (" +
-        "id varchar(256) not null PRIMARY KEY," +
-        "url text," +
-        "title text," +
-        "author varchar(200)," +
-        "publishedOn date," +
-        "body text," +
-        "readingTime varchar(100)," +
-        "created timestamp" +
-    ");")
-    void createTable();
+
 }

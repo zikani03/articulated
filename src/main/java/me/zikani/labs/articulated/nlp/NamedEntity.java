@@ -26,4 +26,7 @@ package me.zikani.labs.articulated.nlp;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record NamedEntity(@JsonProperty("Name") String name, @JsonProperty("EntityType")String entityType) {
+    public String normalizedName() {
+        return name.replaceAll("\\s", "").trim().toLowerCase();
+    }
 }

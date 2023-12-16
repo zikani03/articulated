@@ -24,7 +24,10 @@
 package me.zikani.labs.articulated;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.zikani.labs.articulated.articleworker.NamedEntityResolverWorker;
 import me.zikani.labs.articulated.dao.ArticleDAO;
+import me.zikani.labs.articulated.dao.EntityDAO;
+import me.zikani.labs.articulated.dao.MigrationsDAO;
 import me.zikani.labs.articulated.dao.WordFrequencyDAO;
 import me.zikani.labs.articulated.fetch.ArticleFetcherFactory;
 import me.zikani.labs.articulated.greypot.GreypotHttpClient;
@@ -36,10 +39,16 @@ import org.jdbi.v3.sqlite3.SQLitePlugin;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 import spark.Spark;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.concurrent.Executors;
 
 import static spark.Spark.*;
 
@@ -56,16 +65,25 @@ public class Application {
         jdbi.installPlugin(new SqlObjectPlugin());
         jdbi.installPlugin(new SQLitePlugin());
 
-        String neriaURL = System.getProperty("neria.url", "https://neria-fly.fly.dev");
+        String neriaURL = System.getProperty("neria.url", "http://localhost:8080");
         String greypotURL = System.getProperty("greypot.url", "https://greypot-studio.fly.dev");
 
         final WordFrequencyDAO wordFrequencyDAO = jdbi.onDemand(WordFrequencyDAO.class);
         final ArticleDAO articleDAO = jdbi.onDemand(ArticleDAO.class);
+        final EntityDAO entityDAO = jdbi.onDemand(EntityDAO.class);
+        final MigrationsDAO migrations = jdbi.onDemand(MigrationsDAO.class);
 
+        migrations.runAll();
 
-        articleDAO.createTable();
         articleDAO.createFtsTableIfNotExists();
         wordFrequencyDAO.createTable();
+
+        var worker = new NamedEntityResolverWorker(
+                articleDAO, entityDAO,
+                new NeriaNamedEntityRecognitionService(neriaURL, objectMapper), objectMapper
+        );
+
+        Executors.newVirtualThreadPerTaskExecutor().execute(worker);
 
         ipAddress(System.getProperty("server.host", "localhost"));
         port(Integer.parseInt(System.getProperty("server.port", "4567")));
@@ -86,6 +104,35 @@ public class Application {
         Spark.get("/articulated.db", new DatabaseDownloadRoute(databasePath));
         Spark.get("/articles/:id/pdf", new ArticlesPDFRoute(objectMapper, articleDAO, new GreypotHttpClient(greypotURL, objectMapper)));
         Spark.post("/natty", new NattyRoute());
+
+        Spark.get("/sse", new Route() {
+            @Override
+            public Object handle(Request request, Response response) throws Exception {
+
+                String event = "event:hello\ndata:Hello\n\n";
+                final OutputStream os = response.raw().getOutputStream();
+                //Executors.newCachedThreadPool().execute(() -> {
+                    OutputStreamWriter w = new OutputStreamWriter(os);
+                    while(true) {
+                        try {
+                            w.write(event);
+                            w.flush();
+                            Thread.sleep(1_000);
+                        } catch (Exception e) {
+                            try {
+                                os.close();
+                            } catch (Exception inner) {}
+                            throw new RuntimeException(e);
+                        }
+                    }
+//                });
+
+//                response.header("Connection", "keep-alive");
+//                response.header("Content-Type", "text/event-stream");
+//
+//                return response.raw();
+            }
+        });
 
         var enableKafkaPublisher = Boolean.getBoolean("kafka.enabled");
         if (enableKafkaPublisher) {
