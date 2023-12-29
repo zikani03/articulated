@@ -10,12 +10,10 @@ app = Flask(__name__)
 def extract_locations():
     body = request.get_data(as_text=True)
     countries = find_country_in_string(body)
-    if len(countries) < 1:
-        return jsonify({ 'message': "No locations found"}), 400
 
     country_name_set = { c.location.canonical_name for c in countries }
 
-    return jsonify(find_city_in_string(body, country_name_set))
+    return jsonify(find_city_in_string(body, country_name_set | {"Malawi"}))
 
 
 if __name__ == '__main__':
