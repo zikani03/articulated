@@ -27,6 +27,6 @@ import me.zikani.labs.articulated.model.Article;
 
 import java.util.List;
 
-public interface NamedEntityRecognition {
+public interface NamedEntityExtractor {
     List<NamedEntity> extractNames(Article article);
 }

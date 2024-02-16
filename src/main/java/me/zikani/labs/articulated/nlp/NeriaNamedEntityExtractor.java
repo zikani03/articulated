@@ -36,12 +36,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NeriaNamedEntityRecognitionService implements NamedEntityRecognition {
+public class NeriaNamedEntityExtractor implements NamedEntityExtractor {
     private final String apiUrl;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
-    public NeriaNamedEntityRecognitionService(String apiUrl, ObjectMapper objectMapper) {
+    public NeriaNamedEntityExtractor(String apiUrl, ObjectMapper objectMapper) {
         this.apiUrl = apiUrl;
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()

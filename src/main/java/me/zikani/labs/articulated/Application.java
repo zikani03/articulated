@@ -1,18 +1,18 @@
 /**
  * MIT License
- *
+ * <p>
  * Copyright (c) 2020 - 2022 Zikani Nyirenda Mwase and Contributors
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,7 +24,8 @@
 package me.zikani.labs.articulated;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.zikani.labs.articulated.articleworker.NamedEntityResolverWorker;
+import io.javalin.Javalin;
+import me.zikani.labs.articulated.articleworker.NamedEntityWorker;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.dao.EntityDAO;
 import me.zikani.labs.articulated.dao.MigrationsDAO;
@@ -32,25 +33,18 @@ import me.zikani.labs.articulated.dao.WordFrequencyDAO;
 import me.zikani.labs.articulated.fetch.ArticleFetcherFactory;
 import me.zikani.labs.articulated.greypot.GreypotHttpClient;
 import me.zikani.labs.articulated.kafka.KafkaArticlePublisher;
-import me.zikani.labs.articulated.nlp.NeriaNamedEntityRecognitionService;
+import me.zikani.labs.articulated.nlp.NeriaNamedEntityExtractor;
 import me.zikani.labs.articulated.web.*;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlite3.SQLitePlugin;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.Request;
-import spark.Response;
-import spark.Route;
-import spark.Spark;
 
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.Properties;
 import java.util.concurrent.Executors;
-
-import static spark.Spark.*;
 
 public class Application {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -78,61 +72,32 @@ public class Application {
         articleDAO.createFtsTableIfNotExists();
         wordFrequencyDAO.createTable();
 
-        var worker = new NamedEntityResolverWorker(
+        var worker = new NamedEntityWorker(
                 articleDAO, entityDAO,
-                new NeriaNamedEntityRecognitionService(neriaURL, objectMapper), objectMapper
+                new NeriaNamedEntityExtractor(neriaURL, objectMapper)
         );
 
-        Executors.newVirtualThreadPerTaskExecutor().execute(worker);
+        //Executors.newVirtualThreadPerTaskExecutor().execute(worker);
 
-        ipAddress(System.getProperty("server.host", "localhost"));
-        port(Integer.parseInt(System.getProperty("server.port", "4567")));
-
-        staticFileLocation("public");
-
-        Spark.get("/articles", new ArticlesListRoute(objectMapper, articleDAO));
-        Spark.get("/articles/published-on/:date", new ArticlesListByDateRoute(objectMapper, articleDAO));
-        Spark.get("/articles/label", new ArticleLabelRoute(objectMapper, articleDAO));
-        Spark.get("/articles/random", new ArticleGetRandomRoute(objectMapper, articleDAO));
-
-        Spark.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
-        Spark.get("/articles/amounts", new ArticleAmountsRoute(objectMapper, articleDAO));
-        Spark.get("/articles/amounts/feature0", new ArticleFeature0Route(objectMapper, articleDAO));
-        Spark.get("/articles/download/from", new ArticleFetcherRoute(objectMapper, new ArticleFetcherFactory(), articleDAO));
-        Spark.post("/articles/download/:site/:category", new ArticleDownloadRoute(objectMapper, articleDAO, SLEEP_DURATION));
-        Spark.get("/articles/entities/:id", new ArticleNamedEntitiesResource(objectMapper, articleDAO, new NeriaNamedEntityRecognitionService(neriaURL, objectMapper)));
-        Spark.get("/articulated.db", new DatabaseDownloadRoute(databasePath));
-        Spark.get("/articles/:id/pdf", new ArticlesPDFRoute(objectMapper, articleDAO, new GreypotHttpClient(greypotURL, objectMapper)));
-        Spark.post("/natty", new NattyRoute());
-
-        Spark.get("/sse", new Route() {
-            @Override
-            public Object handle(Request request, Response response) throws Exception {
-
-                String event = "event:hello\ndata:Hello\n\n";
-                final OutputStream os = response.raw().getOutputStream();
-                //Executors.newCachedThreadPool().execute(() -> {
-                    OutputStreamWriter w = new OutputStreamWriter(os);
-                    while(true) {
-                        try {
-                            w.write(event);
-                            w.flush();
-                            Thread.sleep(1_000);
-                        } catch (Exception e) {
-                            try {
-                                os.close();
-                            } catch (Exception inner) {}
-                            throw new RuntimeException(e);
-                        }
-                    }
-//                });
-
-//                response.header("Connection", "keep-alive");
-//                response.header("Content-Type", "text/event-stream");
-//
-//                return response.raw();
-            }
+        var app = Javalin.create(config -> {
+            config.staticFiles.add("public");
         });
+
+        app.get("/articles", new ArticlesListRoute(objectMapper, articleDAO));
+        app.get("/articles/published-on/{date}", new ArticlesListByDateRoute(objectMapper, articleDAO));
+        app.get("/articles/label", new ArticleLabelRoute(objectMapper, articleDAO));
+        app.get("/articles/random", new ArticleGetRandomRoute(objectMapper, articleDAO));
+        app.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
+        app.get("/articles/amounts", new ArticleAmountsRoute(objectMapper, articleDAO));
+        app.get("/articles/amounts/feature0", new ArticleFeature0Route(objectMapper, articleDAO));
+        app.get("/articles/download/from", new ArticleFetcherRoute(objectMapper, new ArticleFetcherFactory(), articleDAO));
+        app.post("/articles/download/{site}/{category}", new ArticleDownloadRoute(objectMapper, articleDAO, SLEEP_DURATION));
+        app.get("/articles/entities/{id}", new ArticleNamedEntitiesResource(objectMapper, articleDAO, new NeriaNamedEntityExtractor(neriaURL, objectMapper)));
+        app.get("/articles/word-cloud/{id}", new ArticleWordCloudRoute(objectMapper, articleDAO, Paths.get("./bin/")));
+        app.get("/articulated.db", new DatabaseDownloadRoute(databasePath));
+        app.get("/articles/{id}/pdf", new ArticlesPDFRoute(objectMapper, articleDAO, new GreypotHttpClient(greypotURL, objectMapper)));
+        app.post("/natty", new NattyRoute());
+        app.sse("/sse", new ServerSentEventsRoute(new ArrayDeque<>()));
 
         var enableKafkaPublisher = Boolean.getBoolean("kafka.enabled");
         if (enableKafkaPublisher) {
@@ -142,7 +107,13 @@ public class Application {
             props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
             final KafkaArticlePublisher kafkaPublisher = new KafkaArticlePublisher("article_ner_finder", props);
-            Spark.post("/articles/publish-to-kafka", new ArticleKafkaPublisherRoute(objectMapper, articleDAO, kafkaPublisher));
+            app.post("/articles/publish-to-kafka", new ArticleKafkaPublisherRoute(objectMapper, articleDAO, kafkaPublisher));
         }
+
+        var host = System.getProperty("server.host", "localhost");
+        var port = Integer.parseInt(System.getProperty("server.port", "4567"));
+
+        app.start(host, port);
+
     }
 }

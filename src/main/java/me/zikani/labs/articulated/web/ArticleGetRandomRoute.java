@@ -24,17 +24,10 @@
 package me.zikani.labs.articulated.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.javalin.http.Context;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.model.Article;
-import me.zikani.labs.articulated.processor.WordFrequencyCounter;
-import spark.Request;
-import spark.Response;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This endpoint outputs articles as plaintext file for labeling in a format that's
@@ -49,8 +42,8 @@ public class ArticleGetRandomRoute extends AbstractBaseRoute {
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
+    public void handle(@NotNull Context context) throws Exception {
         Article article = articleDAO.getRandomArticle();
-        return json(response, article);
+        context.json(article);
     }
 }

@@ -1,18 +1,18 @@
 /**
  * MIT License
- *
+ * <p>
  * Copyright (c) 2020 - 2022 Zikani Nyirenda Mwase and Contributors
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,19 +24,17 @@
 package me.zikani.labs.articulated.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.javalin.http.Context;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.model.Amount;
 import me.zikani.labs.articulated.model.Article;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonMap;
-import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
 
 public class ArticleAmountsRoute extends AbstractBaseRoute {
     private final ArticleDAO articleDAO;
@@ -46,16 +44,16 @@ public class ArticleAmountsRoute extends AbstractBaseRoute {
         this.articleDAO = articleDAO;
     }
 
+
     @Override
-    public Object handle(Request request, Response response) throws Exception {
-        response.type(APPLICATION_JSON.asString());
-        List<Article> articleList =  articleDAO.fetchAll();
+    public void handle(@NotNull Context context) throws Exception {
+        List<Article> articleList = articleDAO.fetchAll();
         Map<String, List<Amount>> amounts = new HashMap<>();
 
         articleList.forEach(article -> {
             amounts.put(article.getUrl(), article.getMentionedAmounts());
         });
 
-        return objectMapper.writeValueAsString(singletonMap("articles", amounts));
+        context.json(singletonMap("articles", amounts));
     }
 }
