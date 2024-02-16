@@ -27,33 +27,39 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.model.Article;
+import me.zikani.labs.articulated.processor.WordFrequencyCounter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
-import static java.util.Collections.emptyList;
+import java.nio.file.Path;
 
 /**
- * Implements a simple full-text search for articles using SQLites Full-Text Search capabilities..
- *
+ * This endpoint outputs articles as plaintext file for labeling in a format that's
+ * compatible with OpenCraftML project
  */
-public class ArticleSearchRoute extends AbstractBaseRoute {
+public class ArticleWordCloudRoute extends AbstractBaseRoute {
     private final ArticleDAO articleDAO;
+    private final Path wordCloudBinary;
 
-    public ArticleSearchRoute(ObjectMapper objectMapper, ArticleDAO articleDAO) {
+    public ArticleWordCloudRoute(ObjectMapper objectMapper, ArticleDAO articleDAO,
+                                 Path pathToWordCloudBinary) {
         super(objectMapper);
         this.articleDAO = articleDAO;
+        this.wordCloudBinary = pathToWordCloudBinary;
     }
 
 
     @Override
     public void handle(@NotNull Context context) throws Exception {
-        String query = context.queryParam("q");
-        if (query == null || query.isEmpty()) {
-            context.json(emptyList());
-            return;
-        }
-        List<Article> articleList = articleDAO.searchArticles(query);
-        context.json(articleList);
+        Article article = articleDAO.getRandomArticle();
+        WordFrequencyCounter counter = new WordFrequencyCounter();
+
+
+        Process p = new ProcessBuilder()
+                .directory(wordCloudBinary.toFile())
+                .command("wordcloudgen", "--input", "file", "", "data")
+                .start();
+
+        p.getOutputStream(); // TODO: write this output stream data to the Response output stream
+        context.json(counter.count(article));
     }
 }

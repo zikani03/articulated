@@ -1,10 +1,10 @@
 package me.zikani.labs.articulated.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.javalin.http.Context;
 import me.zikani.labs.articulated.dao.ArticleDAO;
 import me.zikani.labs.articulated.model.Article;
-import spark.Request;
-import spark.Response;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Collectors;
 
@@ -17,12 +17,12 @@ public class ArticleFeature0Route extends AbstractBaseRoute {
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
+    public void handle(@NotNull Context context) throws Exception {
         var features = articleDAO.fetchAll()
                 .stream().map(Article::makeFeature)
                 .map(Article.ArticleFeature0::getFeatures)
                 .collect(Collectors.toList());
 
-        return json(response, features);
+        context.json(features);
     }
 }
