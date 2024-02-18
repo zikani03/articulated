@@ -1,6 +1,8 @@
 version: '3.7'
 
 services:
+  neria:
+
   redpanda:
     # NOTE: Use the latest version here!
     image: docker.redpanda.com/vectorized/redpanda:latest

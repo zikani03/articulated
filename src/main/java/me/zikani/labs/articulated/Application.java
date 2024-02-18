@@ -40,6 +40,9 @@ import org.jdbi.v3.sqlite3.SQLitePlugin;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisFactory;
+import redis.clients.jedis.JedisPool;
 
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
@@ -72,12 +75,17 @@ public class Application {
         articleDAO.createFtsTableIfNotExists();
         wordFrequencyDAO.createTable();
 
+        var jedisPool = new JedisPool("localhost", 6379);
+
         var worker = new NamedEntityWorker(
-                articleDAO, entityDAO,
-                new NeriaNamedEntityExtractor(neriaURL, objectMapper)
+                articleDAO,
+                entityDAO,
+                new NeriaNamedEntityExtractor(neriaURL, objectMapper),
+                jedisPool,
+                objectMapper
         );
 
-        //Executors.newVirtualThreadPerTaskExecutor().execute(worker);
+        Executors.newVirtualThreadPerTaskExecutor().execute(worker);
 
         var app = Javalin.create(config -> {
             config.staticFiles.add("public");

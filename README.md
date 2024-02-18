@@ -5,6 +5,16 @@ Toy project to scrape articles from some Malawian news sites to play with that d
 This project uses an SQLite database to store the articles and runs a webserver to
 allow you to interact with the downloaded articles.
 
+## Tech Stack
+
+- Java 21+
+- Javalin, used to be SparkJava but moved to Javalin which is being maintained..
+- SQLite
+- Go 1.21+
+- Redis
+- RedPanda for Kafka
+- JSoup
+
 ## Ideas and Objectives
 
 What interesting things can we do:
