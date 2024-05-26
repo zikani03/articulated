@@ -36,10 +36,22 @@ public interface MigrationsDAO {
     """)
     void v3__AddArticleEntitiesTable();
 
+    @SqlUpdate("""
+        CREATE TABLE IF NOT EXISTS article_ratings (
+            article_id text not null,
+            username text not null,
+            rating integer not null,
+            created_at timestamp not null,
+            primary key(article_id, username)
+        );
+    """)
+    void v4__AddArticleRatingsTable();
+
     @Transaction
     default void runAll() {
         v1__AddArticlesTable();
         v2__AddEntitiesTable();
         v3__AddArticleEntitiesTable();
+        v4__AddArticleRatingsTable();
     }
 }

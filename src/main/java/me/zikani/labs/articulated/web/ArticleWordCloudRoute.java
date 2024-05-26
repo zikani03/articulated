@@ -30,6 +30,7 @@ import me.zikani.labs.articulated.model.Article;
 import me.zikani.labs.articulated.processor.WordFrequencyCounter;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -51,15 +52,16 @@ public class ArticleWordCloudRoute extends AbstractBaseRoute {
     @Override
     public void handle(@NotNull Context context) throws Exception {
         Article article = articleDAO.getRandomArticle();
-        WordFrequencyCounter counter = new WordFrequencyCounter();
 
+        var path = Files.createTempFile("articulated", ".txt");
+        Files.writeString(path, article.getBody());
 
         Process p = new ProcessBuilder()
                 .directory(wordCloudBinary.toFile())
                 .command("wordcloudgen", "--input", "file", "", "data")
                 .start();
 
-        p.getOutputStream(); // TODO: write this output stream data to the Response output stream
-        context.json(counter.count(article));
+        p.getOutputStream();
+
     }
 }

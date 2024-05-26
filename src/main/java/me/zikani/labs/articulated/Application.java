@@ -26,15 +26,15 @@ package me.zikani.labs.articulated;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.Javalin;
 import me.zikani.labs.articulated.articleworker.NamedEntityWorker;
-import me.zikani.labs.articulated.dao.ArticleDAO;
-import me.zikani.labs.articulated.dao.EntityDAO;
-import me.zikani.labs.articulated.dao.MigrationsDAO;
-import me.zikani.labs.articulated.dao.WordFrequencyDAO;
+import me.zikani.labs.articulated.dao.*;
 import me.zikani.labs.articulated.fetch.ArticleFetcherFactory;
 import me.zikani.labs.articulated.greypot.GreypotHttpClient;
+import me.zikani.labs.articulated.kafka.KafkaArticleConsumer;
 import me.zikani.labs.articulated.kafka.KafkaArticlePublisher;
+import me.zikani.labs.articulated.model.EntitySub;
 import me.zikani.labs.articulated.nlp.NeriaNamedEntityExtractor;
 import me.zikani.labs.articulated.web.*;
+import org.eclipse.jetty.websocket.api.Session;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlite3.SQLitePlugin;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
@@ -46,6 +46,8 @@ import redis.clients.jedis.JedisPool;
 
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 
@@ -67,6 +69,7 @@ public class Application {
 
         final WordFrequencyDAO wordFrequencyDAO = jdbi.onDemand(WordFrequencyDAO.class);
         final ArticleDAO articleDAO = jdbi.onDemand(ArticleDAO.class);
+        final ArticleRatingDAO articleRatingDAO = jdbi.onDemand(ArticleRatingDAO.class);
         final EntityDAO entityDAO = jdbi.onDemand(EntityDAO.class);
         final MigrationsDAO migrations = jdbi.onDemand(MigrationsDAO.class);
 
@@ -85,8 +88,7 @@ public class Application {
                 objectMapper
         );
 
-        Executors.newVirtualThreadPerTaskExecutor().execute(worker);
-
+        //Executors.newVirtualThreadPerTaskExecutor().execute(worker);
         var app = Javalin.create(config -> {
             config.staticFiles.add("public");
         });
@@ -107,12 +109,38 @@ public class Application {
         app.post("/natty", new NattyRoute());
         app.sse("/sse", new ServerSentEventsRoute(new ArrayDeque<>()));
 
+        Logger wslogger = LoggerFactory.getLogger("websockets");
+
+        app.ws("/ws/entities", ctx -> {
+            ctx.onConnect(handler -> {
+                wslogger.info("got a new connection from a websocket client");
+            });
+
+            ctx.onMessage(handler -> {
+                var sub = handler.messageAsClass(EntitySub.class);
+                wslogger.info("got message from client {}", sub.name());
+                handler.send("No articles found for this topic");
+                wslogger.info("sent message to client");
+            });
+
+            ctx.onClose(handler -> {
+                wslogger.info("closed websocket connection");
+            });
+        });
+
         var enableKafkaPublisher = Boolean.getBoolean("kafka.enabled");
         if (enableKafkaPublisher) {
             Properties props = new Properties();
-            props.setProperty("bootstrap.servers", System.getProperty("kafka.servers", "localhost:9092"));
+            props.setProperty("bootstrap.servers", System.getProperty("kafka.servers", "localhost:19092"));
+            props.put("group.id", "articulated-0");
             props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
             props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+
+            Executors.newVirtualThreadPerTaskExecutor().execute(new KafkaArticleConsumer("article_ner_finder", props));
+
 
             final KafkaArticlePublisher kafkaPublisher = new KafkaArticlePublisher("article_ner_finder", props);
             app.post("/articles/publish-to-kafka", new ArticleKafkaPublisherRoute(objectMapper, articleDAO, kafkaPublisher));
