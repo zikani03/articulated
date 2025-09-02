@@ -90,6 +90,14 @@ public class ArticleFetcher {
                                 LOGGER.error("Failed to read article.", exception);
                                 return;
                             }
+                            if (fetchedArticle.getTitle() == null) {
+                                LOGGER.error("Fetched article but title is null, skipping. article={}", fetchedArticle);
+                                return;
+                            }
+                            if (fetchedArticle.getBody() == null) {
+                                LOGGER.error("Fetched article but body is null, skipping. article={}", fetchedArticle);
+                                return;
+                            }
                             fetchedArticles.add(fetchedArticle);
                         })
                         .toCompletableFuture())

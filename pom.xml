@@ -83,6 +83,11 @@
             <artifactId>jedis</artifactId>
             <version>${jedis.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.spotify</groupId>
+            <artifactId>voyager</artifactId>
+            <version>2.0.0</version>
+        </dependency>
         <!-- tribuo dependencies -->
         <dependency>
             <groupId>org.tribuo</groupId>
