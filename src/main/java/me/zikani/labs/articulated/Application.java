@@ -24,7 +24,10 @@
 package me.zikani.labs.articulated;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.langchain4j.model.ollama.OllamaEmbeddingModel;
 import io.javalin.Javalin;
+import me.zikani.labs.articulated.ai.articleembeddings.ArticleEmbeddingGenerator;
+import me.zikani.labs.articulated.ai.articleembeddings.EmbeddingDatabase;
 import me.zikani.labs.articulated.articleworker.NamedEntityWorker;
 import me.zikani.labs.articulated.dao.*;
 import me.zikani.labs.articulated.fetch.ArticleFetcherFactory;
@@ -88,6 +91,15 @@ public class Application {
                 objectMapper
         );
 
+        var ollamaEmbeddings = OllamaEmbeddingModel.builder()
+                .baseUrl(System.getenv("ARTICULATED_OLLAMA_URL"))
+                .logRequests(false)
+                .logResponses(false)
+                .maxRetries(3)
+                .modelName("embeddinggemma:300m") //System.getenv("ARTICULATED_OLLAMA_MODEL"))
+                .build();
+
+        var embeddingDatabase = new EmbeddingDatabase(new ArticleEmbeddingGenerator(ollamaEmbeddings), articleDAO);
         //Executors.newVirtualThreadPerTaskExecutor().execute(worker);
         var app = Javalin.create(config -> {
             config.staticFiles.add("public");
@@ -98,10 +110,12 @@ public class Application {
         app.get("/articles/label", new ArticleLabelRoute(objectMapper, articleDAO));
         app.get("/articles/random", new ArticleGetRandomRoute(objectMapper, articleDAO));
         app.get("/articles/search", new ArticleSearchRoute(objectMapper, articleDAO));
+        app.get("/articles/semantic-search", new ArticleEmbeddingSearchRoute(objectMapper, embeddingDatabase));
         app.get("/articles/amounts", new ArticleAmountsRoute(objectMapper, articleDAO));
         app.get("/articles/amounts/feature0", new ArticleFeature0Route(objectMapper, articleDAO));
         app.get("/articles/download/from", new ArticleFetcherRoute(objectMapper, new ArticleFetcherFactory(), articleDAO));
         app.post("/articles/download/{site}/{category}", new ArticleDownloadRoute(objectMapper, articleDAO, SLEEP_DURATION));
+        app.get("/articles/embeddings/{id}", new ArticleEmbeddingRoute(objectMapper, articleDAO, new ArticleEmbeddingGenerator(ollamaEmbeddings)));
         app.get("/articles/entities/{id}", new ArticleNamedEntitiesResource(objectMapper, articleDAO, new NeriaNamedEntityExtractor(neriaURL, objectMapper)));
         app.get("/articles/word-cloud/{id}", new ArticleWordCloudRoute(objectMapper, articleDAO, Paths.get("./bin/")));
         app.get("/articulated.db", new DatabaseDownloadRoute(databasePath));

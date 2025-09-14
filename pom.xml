@@ -34,6 +34,8 @@
         <maven.compiler.target>21</maven.compiler.target>
         <jedis.version>5.1.0</jedis.version>
         <tribuo.version>4.3.1</tribuo.version>
+        <langchain4j.version>1.4.0</langchain4j.version>
+        <jvector.version>4.0.0-rc.2</jvector.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -87,6 +89,21 @@
             <groupId>com.spotify</groupId>
             <artifactId>voyager</artifactId>
             <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.jbellis</groupId>
+            <artifactId>jvector</artifactId>
+            <version>${jvector.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-ollama</artifactId>
+            <version>${langchain4j.version}</version>
         </dependency>
         <!-- tribuo dependencies -->
         <dependency>

@@ -43,8 +43,12 @@ public interface ArticleDAO {
     @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles WHERE id = :id")
     Article get(@Bind("id") String id);
 
+    @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles LIMIT 100")
+    List<Article> fetchLimited();
+
     @SqlQuery("SELECT id, url, title, author, publishedOn, body, readingTime, created FROM articles")
     List<Article> fetchAll();
+
     @SqlQuery("""
     SELECT id, url, title, author, publishedOn, body, readingTime, created 
     FROM articles
